@@ -13,7 +13,11 @@ export default (sequelize, DataTypes) => {
 	);
 
 	OptionGroups.associate = (models) => {
-		OptionGroups.belongsTo(models.product);
+		OptionGroups.belongsTo(models.product, {
+			foreignKey: {
+                allowNull: false,
+            }
+		});
         OptionGroups.belongsToMany(
             models.option, 
             { 
