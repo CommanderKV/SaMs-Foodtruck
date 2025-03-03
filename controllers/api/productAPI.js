@@ -23,75 +23,6 @@ router.get("/", async (req, res) => {
     }
 });
 
-// POST: /create
-router.post("/create", async (req, res) => {
-    try {
-        const newProductDetails = req.body;
-
-        /////////////////////////////////
-        //  Check for product details  //
-        /////////////////////////////////
-        checkProductDetails(newProductDetails);
-
-        // Add photo to the images folder
-        // Must be a base64Encoded string
-        let photoPath = await savePhoto(newProductDetails.photo);
-
-        // Create new product
-        const newProduct = await db.products.create({
-            name: newProductDetails.name,
-            description: newProductDetails.description,
-            price: newProductDetails.price,
-            photo: photoPath
-        });
-
-
-        /////////////////////////////
-        //  Check for ingredients  //
-        /////////////////////////////
-        if (newProductDetails.ingredients != undefined && Array.isArray(newProductDetails.ingredients)) {
-            const ingredients = newProductDetails.ingredients;
-            
-            // Check each ingredient details
-            await checkIngredientDetails(ingredients);
-
-            // Create Ingredient Links
-            await db.ingredientsToProducts.bulkCreate(
-                ingredients.map(ingredient => ({
-                    productId: newProduct.id,
-                    ingredientId: ingredient.id,
-                    quantity: ingredient.quantity,
-                    measurement: ingredient.measurement
-                }))
-            );
-        }
-
-        // Send response
-        res.status(201).json({
-            status: "success",
-            data: null
-        });
-
-    // Catch any errors
-    } catch (error) {
-        // If we threw the error then send failure message
-        if (error instanceof TypeError) {
-            return res.status(400).json({
-                status: "failure",
-                message: error.message
-            });
-
-        // If the error was thrown by something else
-        } else {
-            console.log(`Failed to add menu item ${error}`);
-            res.status(500).json({
-                status: "failure",
-                message: "Failed to add menu item"
-            });
-        }
-    }
-});
-
 // Check all product details
 function checkProductDetails(productDetails) {
     // Check if the name is set
@@ -180,5 +111,76 @@ async function checkIngredientDetails(ingredients) {
         } else {throw new TypeError("Ingredient measurement is required");}
     }
 }
+
+// POST: /create
+router.post("/create", async (req, res) => {
+    try {
+        const newProductDetails = req.body;
+
+        /////////////////////////////////
+        //  Check for product details  //
+        /////////////////////////////////
+        checkProductDetails(newProductDetails);
+
+        // Add photo to the images folder
+        // Must be a base64Encoded string
+        let photoPath = await savePhoto(newProductDetails.photo);
+
+        // Create new product
+        const newProduct = await db.products.create({
+            name: newProductDetails.name,
+            description: newProductDetails.description,
+            price: newProductDetails.price,
+            photo: photoPath
+        });
+
+
+        /////////////////////////////
+        //  Check for ingredients  //
+        /////////////////////////////
+        if (newProductDetails.ingredients != undefined && Array.isArray(newProductDetails.ingredients)) {
+            const ingredients = newProductDetails.ingredients;
+            
+            // Check each ingredient details
+            await checkIngredientDetails(ingredients);
+
+            // Create Ingredient Links
+            await db.ingredientsToProducts.bulkCreate(
+                ingredients.map(ingredient => ({
+                    productId: newProduct.id,
+                    ingredientId: ingredient.id,
+                    quantity: ingredient.quantity,
+                    measurement: ingredient.measurement
+                }))
+            );
+        }
+
+        // Send response
+        res.status(201).json({
+            status: "success",
+            data: null
+        });
+
+    // Catch any errors
+    } catch (error) {
+        // If we threw the error then send failure message
+        if (error instanceof TypeError) {
+            return res.status(400).json({
+                status: "failure",
+                message: error.message
+            });
+
+        // If the error was thrown by something else
+        } else {
+            console.log(`Failed to add menu item ${error}`);
+            res.status(500).json({
+                status: "failure",
+                message: "Failed to add menu item"
+            });
+        }
+    }
+});
+
+
 
 export default router;
