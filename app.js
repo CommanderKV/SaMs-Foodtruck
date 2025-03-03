@@ -33,6 +33,10 @@ app.use("/", homeController);
 app.use("/menu", menuController);
 app.use("/", cartController);
 
+// API routes
+import api from "./controllers/api/index.js";
+app.use("/api", api);
+
 // Error handling middleware
 app.use((err, req, res, next) => {
 	if (app.get("env") === "dev") {
