@@ -23,6 +23,45 @@ router.get("/", async (req, res) => {
     }
 });
 
+// GET: /:id
+router.get("/:id", async (req, res) => {
+    try {
+        const productId = req.params.id;
+
+        // Check if the product ID is valid
+        if (isNaN(productId) || productId <= 0) {
+            throw new TypeError("Invalid product ID");
+        }
+
+        // Get the product details
+        const product = await db.products.findOne(
+            {
+                where: {
+                    id: productId
+                }
+            }
+        );
+        if (!product) {
+            throw new TypeError("Product not found");
+        }
+
+        // Get the ingredients
+        product.ingredients = await db.ingredientsToProducts.findAll(
+            {
+                where: {
+                    productId: productId
+                }
+            }
+        );
+
+        // Return the product details
+        res.status(200).json({
+            status: "success",
+            data: product
+        });
+    } catch (error) {}
+});
+
 // Check all product details
 function checkProductDetails(productDetails) {
     // Check if the name is set
@@ -181,6 +220,136 @@ router.post("/create", async (req, res) => {
     }
 });
 
+// PUT: /update
+router.put("/update", async (req, res) => {
+    try {
+        const updatedProductDetails = req.body;
+        
+        // Check to make sure a product id is given
+        if (updatedProductDetails.id != undefined) {
+            if (typeof updatedProductDetails.id !== "number") {
+                throw new TypeError("Product ID must be a number");
+            }
+            if (updatedProductDetails.id <= 0) {
+                throw new TypeError("Invalid product ID");
+            }
 
+            // Check if the product exists
+            const foundProduct = await db.products.findOne({ where: { id: updatedProductDetails.id } });
+            if (!foundProduct) {
+                throw new TypeError("Invalid product ID");
+            }
+        } else {
+            throw new TypeError("Product ID is required");
+        }
+
+        // Create updated product values
+        let updatedProduct = {};
+        if (updatedProductDetails.name != undefined) {
+            updatedProduct.name = updatedProductDetails.name;
+        }
+        if (updatedProductDetails.description != undefined) {
+            updatedProduct.description = updatedProductDetails.description;
+        }
+        if (updatedProductDetails.price != undefined) {
+            updatedProduct.price = updatedProductDetails.price;
+        }
+        if (updatedProductDetails.photo != undefined) {
+            updatedProduct.photo = await savePhoto(updatedProductDetails.photo);
+        }
+
+        // Update given parameters
+        db.products.update(
+            updatedProduct, 
+            { 
+                where: { 
+                    id: updatedProductDetails.id
+                } 
+            }
+        );
+
+        // Check for any ingredients that may need to be updated
+        if (updatedProductDetails.ingredients != undefined && Array.isArray(updatedProductDetails.ingredients)) {
+            const ingredients = updatedProductDetails.ingredients;
+            
+            // Check each ingredient details
+            for (const ingredient of ingredients) {
+                if (ingredient.id != undefined) {
+                    if (typeof ingredient.id !== "number") {
+                        throw new TypeError("Ingredient ID must be a number");
+                    }
+                    if (ingredient.id <= 0) {
+                        throw new TypeError("Invalid ingredient ID");
+                    }
+                    
+                    // Check the ingredient ID
+                    const foundIngredient = await db.ingredients.findOne({ where: { id: ingredient.id } });
+                    if (!foundIngredient) {
+                        throw new TypeError("Invalid ingredient ID");
+                    }
+                } else {
+                    throw new TypeError("Ingredient ID is required");
+                }
+
+                if (ingredient.quantity != undefined) {
+                    if (typeof ingredient.quantity !== "number") {
+                        throw new TypeError("Ingredient quantity must be a number");
+                    }
+                    if (ingredient.quantity <= 0) {
+                        throw new TypeError("Ingredient quantity must be greater than 0");
+                    }
+                } else if (ingredient.measurement != undefined) {
+                    if (typeof ingredient.measurement !== "string") {
+                        throw new TypeError("Ingredient measurement must be a string");
+                    }
+                    if (ingredient.measurement.trim() === "") {
+                        throw new TypeError("Ingredient measurement must not be empty");
+                    }
+                }
+            }
+
+            // Delete all ingredient links
+            await db.ingredientsToProducts.destroy({ where: { productId: updatedProductDetails.id } });
+
+            // Create Ingredient Links
+            await db.ingredientsToProducts.bulkCreate(
+                ingredients.map(ingredient => {
+                    let data = {
+                        productId: updatedProductDetails.id,
+                        ingredientId: ingredient.id
+                    };
+                    if (ingredient.quantity != undefined) {
+                        data.quantity = ingredient.quantity;
+                    }
+                    if (ingredient.measurement != undefined) {
+                        data.measurement = ingredient.measurement;
+                    }
+                    return data;
+                })
+            );
+        }
+
+        res.status(200).json({
+            status: "success",
+            message: "Product updated successfully"
+        });
+
+    } catch (error) {
+        if (error instanceof TypeError) {
+            return res.status(400).json({
+                status: "failure",
+                message: error.message
+            });
+        } else {
+            console.log(`Failed to update menu item ${error}`);
+            res.status(500).json({
+                status: "failure",
+                message: "Failed to update menu item"
+            });
+        }
+    }
+});
+
+// DELETE: /delete
 
 export default router;
