@@ -1,33 +1,56 @@
-import { DataTypes } from "sequelize";
-import db from "../controllers/dbController.js";
+export default (sequelize, DataTypes) => {
+	const Ingredient = sequelize.define(
+		'ingredient', 
+		{
+			name: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				validate: {
+					notEmpty: true,
+				},
+			},
+			description: {
+				type: DataTypes.STRING,
+				allowNull: true,
+				validate: {
+					notEmpty: true,
+				},
+			},
+			quantity: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+			},
+			photo: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				default: "default.jpg",
+				validate: {
+					notEmpty: true,
+				},
+			},
+			productLnk: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				validate: {
+					notEmpty: true,
+				},
+			},
+			price: {
+				type: DataTypes.DECIMAL(10, 2),
+				allowNull: false,
+			}
+		}
+	);
 
-const Ingredient = db.define("ingredient", {
-	ingredientID: {
-		type: DataTypes.INTEGER,
-		primaryKey: true,
-		autoIncrement: true,
-	},
-	name: {
-		type: DataTypes.STRING,
-		allowNull: false,
-	},
-	description: {
-		type: DataTypes.STRING,
-		allowNull: true,
-	},
-	quantity: {
-		type: DataTypes.INTEGER,
-		allowNull: false,
-		defaultValue: 0,
-	},
-	photo: {
-		type: DataTypes.STRING,
-		allowNull: true,
-	},
-	productLink: {
-		type: DataTypes.STRING,
-		allowNull: true,
-	},
-});
+	Ingredient.associate = (models) => {
+		Ingredient.belongsToMany(
+			models.product, 
+			{ 
+				through: "ingredientsToProducts",
+			}
+		);
+		Ingredient.hasMany(models.option);
+	};
 
-export default Ingredient;
+	return Ingredient;
+};
