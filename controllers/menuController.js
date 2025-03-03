@@ -1,16 +1,16 @@
 import { Router } from "express";
+import db from "../models/index.js";
 
 const router = Router();
 
-// Sample menu items
-const menuItems = [
-	{ id: 1, name: "Burger", price: 5.99 },
-	{ id: 2, name: "Fries", price: 2.99 },
-	{ id: 3, name: "Soda", price: 1.99 },
-];
-
-router.get("/", (req, res) => {
-	res.json(menuItems);
+router.get("/", async (req, res) => {
+	try {
+		const menuItems = await db.products.findAll();
+		res.json(menuItems);
+	} catch (error) {
+		console.log(`Failed to get menu items ${error}`)
+		res.status(500).json({ message: "Failed to retrieve menu items" });
+	}
 });
 
 export default router;
