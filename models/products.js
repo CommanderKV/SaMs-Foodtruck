@@ -1,6 +1,6 @@
 export default (sequelize, DataTypes) => {
 	const Product = sequelize.define(
-		'product', 
+		'products', 
 		{
 			name: {
 				type: DataTypes.STRING,
@@ -36,18 +36,18 @@ export default (sequelize, DataTypes) => {
 
     Product.associate = (models) => {
         Product.belongsToMany(
-            models.ingredient, 
+            models.ingredients, 
             { 
                 through: "ingredientsToProducts",
             }
         );
         Product.belongsToMany(
-            models.discount, 
+            models.discounts, 
             { 
                 through: "discountsToProducts",
             }
         );
-        Product.hasMany(models.optionGroup);
+        Product.hasMany(models.optionGroups);
     };
 
 	return Product;

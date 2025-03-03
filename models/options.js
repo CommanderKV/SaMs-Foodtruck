@@ -1,6 +1,6 @@
 export default (sequelize, DataTypes) => {
 	const Options = sequelize.define(
-		'option', 
+		'options', 
 		{
 			priceAdjustment: {
 				type: DataTypes.DECIMAL(10, 2),
@@ -32,13 +32,13 @@ export default (sequelize, DataTypes) => {
 	);
 
 	Options.associate = (models) => {
-		Options.belongsTo(models.ingredient, {
+		Options.belongsTo(models.ingredients, {
 			foreignKey: {
                 allowNull: false,
             }
 		});
         Options.belongsToMany(
-            models.optionGroup, 
+            models.optionGroups, 
             { 
                 through: "optionsToGroups",
             }

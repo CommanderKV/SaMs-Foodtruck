@@ -1,6 +1,6 @@
 export default (sequelize, DataTypes) => {
 	const Discount = sequelize.define(
-		"discount", 
+		"discounts", 
 		{
 			name: {
 				type: DataTypes.STRING,
@@ -28,7 +28,7 @@ export default (sequelize, DataTypes) => {
 
     Discount.associate = (models) => {
         Discount.belongsToMany(
-            models.product, 
+            models.products, 
             { 
                 through: "discountsToProducts",
             }

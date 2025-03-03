@@ -1,6 +1,6 @@
 export default (sequelize, DataTypes) => {
 	const OptionGroups = sequelize.define(
-		'optionGroup', 
+		'optionGroups', 
 		{
             sectionName: {
                 type: DataTypes.STRING,
@@ -13,13 +13,13 @@ export default (sequelize, DataTypes) => {
 	);
 
 	OptionGroups.associate = (models) => {
-		OptionGroups.belongsTo(models.product, {
+		OptionGroups.belongsTo(models.products, {
 			foreignKey: {
                 allowNull: false,
             }
 		});
         OptionGroups.belongsToMany(
-            models.option, 
+            models.options, 
             { 
                 through: "optionsToGroups",
             }
