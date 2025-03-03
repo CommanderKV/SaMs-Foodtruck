@@ -47,6 +47,12 @@ export default (sequelize, DataTypes) => {
                 through: "discountsToProducts",
             }
         );
+		Product.belongsToMany(
+			models.categories, 
+			{ 
+				through: "categoriesToProducts",
+			}
+		);
         Product.hasMany(models.optionGroups);
     };
 

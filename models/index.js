@@ -36,7 +36,8 @@ const modelFiles = fs
         );
     });
 
-	// Import the models
+// Import the models
+let models = [];
 for (const file of modelFiles) {
     // Convert the file path to a file URL
     const modelPath = path.join(__dirname, file);
@@ -44,7 +45,10 @@ for (const file of modelFiles) {
     const { default: modelDefiner } = await import(modelUrl);
     const model = modelDefiner(sequelize, DataTypes);
     db[model.name] = model;
+	models.push(model.name);
 }
+
+console.log(`Loaded models: ${models.join(', ')}`);
 
 // Initialize any associations between models
 for (const modelName of Object.keys(db)) {
