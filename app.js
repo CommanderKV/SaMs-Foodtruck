@@ -5,6 +5,7 @@ import { engine } from "express-handlebars";
 import db from "./models/index.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger.json" with { type: "json" };
+import routes from "./routes.js";
 
 // Load environment variables
 dotenv.config();
@@ -27,10 +28,7 @@ app.set("view engine", "hbs");
 app.set("views", "./views/");
 
 // API routes
-import productController from "./controllers/productController.js";
-import cartController from "./controllers/cartController.js";
-app.use("/api/v1/products", productController);
-app.use("/api/v1/cart", cartController);
+app.use("/api", routes);
 
 // Swagger UI route
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
