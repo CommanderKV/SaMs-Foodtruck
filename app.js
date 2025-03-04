@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import { engine } from "express-handlebars";
 import db from "./models/index.js";
-
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "./swagger.json" with { type: "json" };
 
 // Load environment variables
 dotenv.config();
@@ -25,17 +26,14 @@ app.engine("hbs", engine({
 app.set("view engine", "hbs");
 app.set("views", "./views/");
 
-// Controller routes
-import homeController from "./controllers/homeController.js";
-import menuController from "./controllers/menuController.js";
-import cartController from "./controllers/cartController.js";
-app.use("/", homeController);
-app.use("/menu", menuController);
-app.use("/", cartController);
-
 // API routes
-import api from "./controllers/api/index.js";
-app.use("/api", api);
+import productController from "./controllers/productController.js";
+import cartController from "./controllers/cartController.js";
+app.use("/api/v1/products", productController);
+app.use("/api/v1/cart", cartController);
+
+// Swagger UI route
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
