@@ -272,7 +272,7 @@ router.put("/update", async (req, res) => {
         }
 
         // Update given parameters
-        db.products.update(
+        await db.products.update(
             updatedProduct, 
             { 
                 where: { 
