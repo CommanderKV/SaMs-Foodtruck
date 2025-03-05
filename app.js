@@ -27,8 +27,10 @@ app.set("view engine", "hbs");
 app.set("views", "./views/");
 
 // API routes
+import ingredientController from "./controllers/ingredientController.js";
 import productController from "./controllers/productController.js";
 import cartController from "./controllers/cartController.js";
+app.use("/api/v1/ingredients", ingredientController);
 app.use("/api/v1/products", productController);
 app.use("/api/v1/cart", cartController);
 
