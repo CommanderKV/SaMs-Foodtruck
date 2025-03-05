@@ -9,6 +9,10 @@
         {
             "name": "Products",
             "description": "Operations about products"
+        },
+        {
+            "name": "Ingredients",
+            "description": "Operations about ingredients"
         }
     ],
     "paths": {
@@ -22,31 +26,45 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
+                                    "type": "object",
                                     "properties": {
-                                        "id": {
-                                            "type": "integer"
-                                        },
-                                        "name": {
+                                        "status": {
                                             "type": "string"
                                         },
-                                        "price": {
-                                            "type": "number"
-                                        },
-                                        "category": {
-                                            "type": "string"
-                                        },
-                                        "description": {
-                                            "type": "string"
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "price": {
+                                                        "type": "number"
+                                                    },
+                                                    "category": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 },
                                 "example": {
-                                    "id": 1,
-                                    "name": "Burger",
-                                    "price": 5.99,
-                                    "category": "Main",
-                                    "description": "A delicious burger"
+                                    "status": "success",
+                                    "data": {
+                                        "id": 1,
+                                        "name": "Burger",
+                                        "price": 5.99,
+                                        "category": "Main",
+                                        "description": "A delicious burger"
+                                    }
                                 }
                             }
                         }
@@ -100,41 +118,52 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "id": {
-                                            "type": "integer"
-                                        },
-                                        "name": {
+                                        "status": {
                                             "type": "string"
                                         },
-                                        "price": {
-                                            "type": "number"
-                                        },
-                                        "category": {
-                                            "type": "string"
-                                        },
-                                        "description": {
-                                            "type": "string"
-                                        },
-                                        "ingredients": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "quantity": {
-                                                        "type": "number"
-                                                    },
-                                                    "measurement": {
-                                                        "type": "string"
-                                                    }
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
                                                 },
-                                                "required": ["id", "quantity", "measurement"]
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "price": {
+                                                    "type": "number"
+                                                },
+                                                "category": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "ingredients": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "quantity": {
+                                                                "type": "number"
+                                                            },
+                                                            "measurement": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["id", "quantity", "measurement"]
+                                                    }
+                                                }
                                             }
                                         }
-                                    },
-                                    "example": {
+                                    }
+                                },
+                                "example": {
+                                    "status": "success",
+                                    "data": {
                                         "id": 1,
                                         "name": "Burger",
                                         "price": 5.99,
@@ -444,7 +473,8 @@
                                         }
                                     },
                                     "example": {
-                                        "status": "success"
+                                        "status": "success",
+                                        "message": "Successfully updated product"
                                     }
                                 }
                             }
@@ -582,8 +612,573 @@
                     }
                 }
             }
-        }
+        },
 
-        
+        "/ingredients": {
+            "get": {
+                "summary": "Get all ingredients",
+                "tags": ["Ingredients"],
+                "responses": {
+                    "200": {
+                        "description": "Successfully obtained ingredients",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "type": "string"
+                                                    },
+                                                    "quantity": {
+                                                        "type": "integer"
+                                                    },
+                                                    "photo": {
+                                                        "type": "string"
+                                                    },
+                                                    "productLink": {
+                                                        "type": "string"
+                                                    },
+                                                    "price": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "success",
+                                    "data": [
+                                        {
+                                            "id": 1,
+                                            "name": "Beef Patty",
+                                            "description": "A delicious beef patty",
+                                            "quantity": 10,
+                                            "photo": "http://example.com/beef-patty.jpg",
+                                            "productLink": "http://example.com/products/beef-patty",
+                                            "price": 4.99
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve ingredients",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "failure",
+                                    "message": "Failed to retrieve ingredients"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ingredients/{id}": {
+            "get": {
+                "summary": "Get an ingredient by their id",
+                "tags": ["Ingredients"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The id of the ingredient",
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully obtained ingredient",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": "string"
+                                                },
+                                                "quantity": {
+                                                    "type": "integer"
+                                                },
+                                                "photo": {
+                                                    "type": "string"
+                                                },
+                                                "productLink": {
+                                                    "type": "string"
+                                                },
+                                                "price": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "success",
+                                    "data": {
+                                        "id": 1,
+                                        "name": "Beef Patty",
+                                        "description": "A delicious beef patty",
+                                        "quantity": 10,
+                                        "photo": "http://example.com/beef-patty.jpg",
+                                        "productLink": "http://example.com/products/beef-patty",
+                                        "price": 4.99
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid id or ingredient not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "failure",
+                                    "message": "Invalid id or ingredient not found"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve ingredients",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "failure",
+                                    "message": "Failed to retrieve ingredients"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ingredients/create": {
+            "post": {
+                "summary": "Create a new ingredient",
+                "tags": ["Ingredients"],
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The name of the ingredient",
+                        "example": "Beef Patty"
+                    },
+                    {
+                        "name": "description",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The description of the ingredient",
+                        "example": "A delicious beef patty"
+                    },
+                    {
+                        "name": "quantity",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The quantity of the ingredient",
+                        "example": 10
+                    },
+                    {
+                        "name": "photo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The photo of the ingredient as a base64 encoded string",
+                        "example": "data:image/png;base64,iVBORw0KGgoAAAANSUh..."
+                    },
+                    {
+                        "name": "productLink",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The link to the product page",
+                        "example": "http://example.com/products/beef-patty"
+                    },
+                    {
+                        "name": "price",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "number"
+                        },
+                        "description": "The price of the ingredient",
+                        "example": 4.99
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successfully created ingredient",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "success"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ingredient data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "failure",
+                                    "message": "Invalid ingredient data"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create ingredient",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "failure",
+                                    "message": "Failed to create ingredient"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ingredients/update": {
+            "put": {
+                "summary": "Update an ingredient by their id",
+                "tags": ["Ingredients"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The id of the ingredient",
+                        "example": 1
+                    },
+                    {
+                        "name": "name",
+                        "in": "body",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The name of the ingredient",
+                        "example": "Beef Patty"
+                    },
+                    {
+                        "name": "description",
+                        "in": "body",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The description of the ingredient",
+                        "example": "A delicious beef patty"
+                    },
+                    {
+                        "name": "quantity",
+                        "in": "body",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The quantity of the ingredient",
+                        "example": 10
+                    },
+                    {
+                        "name": "photo",
+                        "in": "body",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The photo of the ingredient as a base64 encoded string",
+                        "example": "data:image/png;base64,iVBORw0KGgoAAAANSUh..."
+                    },
+                    {
+                        "name": "productLink",
+                        "in": "body",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The link to the product page",
+                        "example": "http://example.com/products/beef-patty"
+                    },
+                    {
+                        "name": "price",
+                        "in": "body",
+                        "required": false,
+                        "schema": {
+                            "type": "number"
+                        },
+                        "description": "The price of the ingredient",
+                        "example": 4.99
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated ingredient",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "success",
+                                    "message": "Successfully updated ingredient"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid id or ingredient data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "failure",
+                                    "message": "Invalid id or ingredient data"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update ingredient",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "failure",
+                                    "message": "Failed to update ingredient"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ingredients/delete": {
+            "delete": {
+                "summary": "Delete an ingredient by their id",
+                "tags": ["Ingredients"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The id of the ingredient",
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted ingredient",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "success",
+                                    "message": "Successfully deleted ingredient"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid id",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "failure",
+                                    "message": "Invalid id"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete ingredient",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "failure",
+                                    "message": "Failed to delete ingredient"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
