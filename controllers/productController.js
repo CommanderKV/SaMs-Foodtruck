@@ -4,7 +4,7 @@ import savePhoto from '../tools/photoSaver.js';
 const router = Router();
 
 // GET: /
-router.get("/", async (req, res) => {
+export const getAllProducts = async (req, res) => {
     try {
         // Get all menu items
         const menuItems = await db.products.findAll();
@@ -21,10 +21,10 @@ router.get("/", async (req, res) => {
             message: "Failed to retrieve menu items"
         });
     }
-});
+};
 
 // GET: /:id
-router.get("/:id", async (req, res) => {
+export const getProductById = async (req, res) => {
     try {
         const productId = req.params.id;
 
@@ -73,7 +73,7 @@ router.get("/:id", async (req, res) => {
             });
         }
     }
-});
+};
 
 // Check all product details
 function checkProductDetails(productDetails) {
@@ -165,7 +165,7 @@ async function checkIngredientDetails(ingredients) {
 }
 
 // POST: /create
-router.post("/create", async (req, res) => {
+export const createProduct = async (req, res) => {
     try {
         const newProductDetails = req.body;
 
@@ -231,10 +231,10 @@ router.post("/create", async (req, res) => {
             });
         }
     }
-});
+};
 
 // PUT: /update
-router.put("/update", async (req, res) => {
+export const updateProduct = async (req, res) => {
     try {
         const updatedProductDetails = req.body;
         
@@ -361,10 +361,10 @@ router.put("/update", async (req, res) => {
             });
         }
     }
-});
+};
 
 // DELETE: /delete
-router.delete("/delete", async (req, res) => {
+export const deleteProduct = async (req, res) => {
     try {
         const productId = req.body.id;
 
@@ -409,6 +409,12 @@ router.delete("/delete", async (req, res) => {
             });
         }
     }
-});
+};
 
-export default router;
+export default {
+    getAllProducts,
+    getProductById,
+    createProduct,
+    updateProduct,
+    deleteProduct
+}
