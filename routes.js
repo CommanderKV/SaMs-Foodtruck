@@ -48,7 +48,7 @@ const routes = [
     }
 ]
 
-// Initalizing the routes
+// Initializing the routes
 for (const route of routes) {
     let version = route.version;
     // Go through each controller
