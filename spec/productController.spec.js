@@ -164,7 +164,7 @@ describe('Product Controller Tests', () => {
     });
 
     describe("PUT /update", () => {
-        it("Should update a product", async () => {
+        it("Should update product and ingredients", async () => {
             // Create a sample product to test
             const ingredient = await db.ingredients.create({
                 name: "testIngredient",
@@ -204,22 +204,88 @@ describe('Product Controller Tests', () => {
                     ]
                 });
 
-            console.log(response.body)
-
             // Check the status code and response structure
             expect(response.status).toBe(200);
             expect(response.body.status).toBe("success");
             expect("message" in response.body.data).toBeTruthy();
 
             // Check if the product was updated in the database
-            const updatedProduct = await db.products.findByPk(product.id);
+            const updatedProduct = await db.products.findByPk(
+                product.id, 
+                { 
+                    include: db.ingredients
+                }
+            );
             expect(updatedProduct.name).toBe("Updated Product");
             expect(updatedProduct.description).toBe("Updated Description");
             expect(updatedProduct.price).toBe("19.99");
 
-            // Check if the ingredint was updated
-            const updatedIngredintToProduct = await db.ingredientsToProducts.findByPk(ingredient.id);
-            expect(updatedIngredintToProduct.quantity).toBe(2);
+            // Check if the ingredient was updated in the database
+            const updatedIngredientLink = await db.ingredientsToProducts.findOne({
+                where: {
+                    productId: product.id,
+                    ingredientId: ingredient.id
+                }
+            });
+
+            expect(updatedIngredientLink.quantity).toBe(2);
+
+        });
+
+        it("Should update ingredients linked to a product", async () => {
+            // Create a sample product to test
+            const ingredient = await db.ingredients.create({
+                name: "testIngredient",
+                description: "Testing",
+                quantity: 3,
+                photo: "testing.png",
+                productLink: "testing",
+                price: 3.99
+            });
+            const product = await db.products.create({
+                name: "Test Product",
+                description: "Test Description",
+                price: 9.99,
+                photo: "test-photo-path"
+            });
+            await db.ingredientsToProducts.create({
+                productId: product.id,
+                ingredientId: ingredient.id,
+                quantity: 3,
+                measurement: "tests"
+            });
+            
+
+            // Send a PUT request to the endpoint
+            const response = await request(app)
+                .put("/api/v1/products/update")
+                .send({
+                    id: product.id,
+                    ingredients: [
+                        {
+                            id: ingredient.id,
+                            quantity: 2,
+                            measurement: "tester"
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(200);
+            expect(response.body.status).toBe("success");
+            expect("message" in response.body.data).toBeTruthy();
+
+            // Check if the ingredients were updated
+            const updatedIngredientLink = await db.ingredientsToProducts.findOne({
+                where: {
+                    productId: product.id,
+                    ingredientId: ingredient.id
+                }
+            });
+
+            expect(updatedIngredientLink.quantity).toBe(2);
+            expect(updatedIngredientLink.measurement).toBe("tester");
+
         });
 
         

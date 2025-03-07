@@ -333,33 +333,33 @@ async function updateProduct (req, res) {
         // Update ingredients
         if (updatedProductDetails.ingredients != undefined) {
             // Create a map for old ingredients
-            const ingredients = updatedProductDetails.ingredients;
-            const oldIngredients = Object.fromEntries(ingredients.map((x) => [x.id, x]));
+            const ingredientLinks = updatedProductDetails.ingredients;
+            const oldIngredientLinks = ingredientLinks.reduce((acc, x) => {
+                acc[x.id] = x;
+                return acc;
+            }, {});
 
-            // Get all ingredient links
-            const product = await db.products.findOne({ 
-                where: { 
-                    id: updatedProductDetails.id 
-                },
-                include: db.ingredients
-            });
-            
-            // Update the ingredients
-            const foundIngredients = product.ingredients;
-            for (const ingredient of foundIngredients) {
-                let id = ingredient.id
-                let oldIngredient = oldIngredients[id]
+            for (const id in oldIngredientLinks) {
+                // Get the ingredient link
+                let link = await db.ingredientsToProducts.findOne({
+                    where: {
+                        productId: updatedProductDetails.id,
+                        ingredientId: id
+                    }
+                });
+                let oldIngredientLink = oldIngredientLinks[id];
                 
                 // Check for values to update
-                if (oldIngredient.quantity != undefined) {
-                    ingredient.quantity = oldIngredient.quantity;
+                if (oldIngredientLink.quantity != undefined) {
+                    link.quantity = oldIngredientLink.quantity;
+                    link.changed("quantity", true);
+                }
+                if (oldIngredientLink.measurement != undefined) {
+                    link.measurement = oldIngredientLink.measurement;
+                    link.changed("measurement", true);
                 }
                 
-                if (oldIngredient.measurement != undefined) {
-                    ingredient.measurement = oldIngredient.measurement;
-                }
-
-                ingredient.update();
+                await link.save();
             }
         }
 
