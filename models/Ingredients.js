@@ -28,7 +28,7 @@ export default (sequelize, DataTypes) => {
 					notEmpty: true,
 				},
 			},
-			productLnk: {
+			productLink: {
 				type: DataTypes.STRING,
 				allowNull: false,
 				validate: {
