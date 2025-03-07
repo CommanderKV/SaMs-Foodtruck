@@ -4,7 +4,7 @@ import savePhoto from '../tools/photoSaver.js';
 const router = Router();
 
 // GET: /
-export const getAllProducts = async (req, res) => {
+async function getAllProducts(req, res) {
     try {
         // Get all menu items
         const menuItems = await db.products.findAll();
@@ -24,7 +24,7 @@ export const getAllProducts = async (req, res) => {
 };
 
 // GET: /:id
-export const getProductById = async (req, res) => {
+async function getProductById(req, res) {
     try {
         const productId = req.params.id;
 
@@ -42,7 +42,10 @@ export const getProductById = async (req, res) => {
             }
         );
         if (!product) {
-            throw new TypeError("Product not found");
+            return res.status(404).json({
+                status: "failure",
+                message: "Product not found"
+            });
         }
 
         // Get the ingredients
@@ -97,18 +100,6 @@ function checkProductDetails(productDetails) {
         }
     } else {throw new TypeError("Description is required");}
 
-    // Check if the photo is set
-    if (productDetails.photo != undefined) {
-        if (typeof productDetails.photo !== "string") {
-            throw new TypeError("Photo must be a string");
-        }
-        if (productDetails.photo.trim() === "") {
-            throw new TypeError("Photo must not be empty");
-        }
-    }else {
-        throw new TypeError("Photo is required");
-    }
-
     // Check if the price is set
     if (productDetails.price != undefined) {
         if (typeof productDetails.price !== "number") {
@@ -119,6 +110,18 @@ function checkProductDetails(productDetails) {
         }
     } else {
         throw new TypeError("Price is required");
+    }
+
+    // Check if the photo is set
+    if (productDetails.photo != undefined) {
+        if (typeof productDetails.photo !== "string") {
+            throw new TypeError("Photo must be a string");
+        }
+        if (productDetails.photo.trim() === "") {
+            throw new TypeError("Photo must not be empty");
+        }
+    }else {
+        throw new TypeError("Photo is required");
     }
 }
 
@@ -165,7 +168,7 @@ async function checkIngredientDetails(ingredients) {
 }
 
 // POST: /create
-export const createProduct = async (req, res) => {
+async function createProduct(req, res) {
     try {
         const newProductDetails = req.body;
 
@@ -210,7 +213,7 @@ export const createProduct = async (req, res) => {
         // Send response
         res.status(201).json({
             status: "success",
-            data: null
+            data: newProduct
         });
 
     // Catch any errors
@@ -234,7 +237,7 @@ export const createProduct = async (req, res) => {
 };
 
 // PUT: /update
-export const updateProduct = async (req, res) => {
+async function updateProduct (req, res) {
     try {
         const updatedProductDetails = req.body;
         
@@ -344,7 +347,9 @@ export const updateProduct = async (req, res) => {
 
         res.status(200).json({
             status: "success",
-            message: "Product updated successfully"
+            data: {
+                message: "Product updated successfully"
+            }
         });
 
     } catch (error) {
@@ -364,7 +369,7 @@ export const updateProduct = async (req, res) => {
 };
 
 // DELETE: /delete
-export const deleteProduct = async (req, res) => {
+async function deleteProduct(req, res) {
     try {
         const productId = req.body.id;
 
