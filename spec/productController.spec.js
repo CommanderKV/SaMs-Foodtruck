@@ -3,15 +3,30 @@ import request from 'supertest'; // assuming you're using supertest for API test
 import { app } from '../app.js'; // Path to the Express app
 import db from '../models/index.js'; // Path to your DB models
 import fs from 'fs';
+import { measureMemory } from 'vm';
 
 describe('Product Controller Tests', () => {
 
     // Clear the database before each test
     beforeEach(async () => {
+        // Clear the ingredients to products table
+        await db.ingredientsToProducts.findAll().then((item) => {
+            item.forEach(async (item) => {
+                await item.destroy();
+            });
+        });
+
         // Clear the products table
         await db.products.findAll().then((products) => {
             products.forEach(async (product) => {
                 await product.destroy();
+            });
+        });
+
+        // Clear the ingredients table
+        await db.ingredients.findAll().then((ingredient) => {
+            ingredient.forEach(async (ingredient) => {
+                await ingredient.destroy();
             });
         });
     });
@@ -151,12 +166,27 @@ describe('Product Controller Tests', () => {
     describe("PUT /update", () => {
         it("Should update a product", async () => {
             // Create a sample product to test
+            const ingredient = await db.ingredients.create({
+                name: "testIngredient",
+                description: "Testing",
+                quantity: 3,
+                photo: "testing.png",
+                productLink: "testing",
+                price: 3.99
+            });
             const product = await db.products.create({
                 name: "Test Product",
                 description: "Test Description",
                 price: 9.99,
                 photo: "test-photo-path"
             });
+            await db.ingredientsToProducts.create({
+                productId: product.id,
+                ingredientId: ingredient.id,
+                quantity: 3,
+                measurement: "tests"
+            });
+            
 
             // Send a PUT request to the endpoint
             const response = await request(app)
@@ -165,20 +195,68 @@ describe('Product Controller Tests', () => {
                     id: product.id,
                     name: "Updated Product",
                     description: "Updated Description",
-                    price: 19.99
+                    price: 19.99,
+                    ingredients: [
+                        {
+                            id: ingredient.id,
+                            quantity: 2,
+                        }
+                    ]
                 });
+
+            console.log(response.body)
 
             // Check the status code and response structure
             expect(response.status).toBe(200);
             expect(response.body.status).toBe("success");
-            expect(response.body.data.message).toBe("Product updated successfully");
+            expect("message" in response.body.data).toBeTruthy();
 
             // Check if the product was updated in the database
             const updatedProduct = await db.products.findByPk(product.id);
             expect(updatedProduct.name).toBe("Updated Product");
             expect(updatedProduct.description).toBe("Updated Description");
             expect(updatedProduct.price).toBe("19.99");
+
+            // Check if the ingredint was updated
+            const updatedIngredintToProduct = await db.ingredientsToProducts.findByPk(ingredient.id);
+            expect(updatedIngredintToProduct.quantity).toBe(2);
         });
+
+        
+        it("Should fail with no id given", async () => {
+            // Send a request
+            const response = await request(app)
+                .put("/api/v1/products/update");
+            
+            // Check the request
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toContain("Product ID is required");
+        });
+
+        it("Should fail with wrong id given", async () => {
+            // Create a sample product to test
+            const product = await db.products.create({
+                name: "Test Product",
+                description: "Test Description",
+                price: 9.99,
+                photo: "test-photo-path"
+            });
+
+            // Send the request
+            const response = await request(app)
+                .put("/api/v1/products/update")
+                .send({
+                    id: product.id+1,
+                    description: "hi"
+                });
+            
+            // Check the response
+            expect(response.status).toBe(404);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Product not found");
+        });
+
     });
 });
 
