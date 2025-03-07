@@ -17,6 +17,7 @@ export default (sequelize, DataTypes) => {
             models.products, 
             { 
                 through: "categoriesToProducts",
+				onDelete: "CASCADE",
             }
         );
     };

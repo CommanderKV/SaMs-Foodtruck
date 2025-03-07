@@ -39,21 +39,26 @@ export default (sequelize, DataTypes) => {
             models.ingredients, 
             { 
                 through: "ingredientsToProducts",
+				onDelete: "CASCADE",
             }
         );
         Product.belongsToMany(
             models.discounts, 
             { 
                 through: "discountsToProducts",
+				onDelete: "CASCADE",
             }
         );
 		Product.belongsToMany(
 			models.categories, 
 			{ 
 				through: "categoriesToProducts",
+				onDelete: "CASCADE",
 			}
 		);
-        Product.hasMany(models.optionGroups);
+        Product.hasMany(models.optionGroups, {
+			onDelete: "CASCADE",
+		});
     };
 
 	return Product;

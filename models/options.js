@@ -35,12 +35,14 @@ export default (sequelize, DataTypes) => {
 		Options.belongsTo(models.ingredients, {
 			foreignKey: {
                 allowNull: false,
-            }
+            },
+			onDelete: "CASCADE",
 		});
         Options.belongsToMany(
             models.optionGroups, 
             { 
                 through: "optionsToGroups",
+				onDelete: "CASCADE",
             }
         );
 	};

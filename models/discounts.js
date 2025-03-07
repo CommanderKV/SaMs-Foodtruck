@@ -31,6 +31,7 @@ export default (sequelize, DataTypes) => {
             models.products, 
             { 
                 through: "discountsToProducts",
+				onDelete: "CASCADE",
             }
         );
     };

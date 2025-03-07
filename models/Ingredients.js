@@ -47,9 +47,12 @@ export default (sequelize, DataTypes) => {
 			models.products, 
 			{ 
 				through: "ingredientsToProducts",
+				onDelete: "CASCADE",
 			}
 		);
-		Ingredient.hasMany(models.options);
+		Ingredient.hasMany(models.options, {
+			onDelete: "CASCADE",
+		});
 	};
 
 	return Ingredient;
