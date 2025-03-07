@@ -1,7 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
 import helmet from "helmet";
-import { engine } from "express-handlebars";
 import db from "./models/index.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger.json" with { type: "json" };
@@ -17,15 +16,6 @@ app.use(helmet());
 
 // Parse JSON requests
 app.use(express.json());
-
-// Configure Handlebars as the view engine
-app.engine("hbs", engine({ 
-    extname: ".hbs",
-    defaultLayout: "base",
-    layoutsDir: "./views/"
-}));
-app.set("view engine", "hbs");
-app.set("views", "./views/");
 
 // API routes
 app.use("/api", routes);
@@ -46,15 +36,20 @@ const PORT = process.env.PORT || 3000;
 
 // Make sure the database is connected and 
 // updated before starting the server
-db.sequelize.sync({ alter: true }).then(() => {
-    console.log("Database synchronized");
+const startServer = async () => {
+    try {
+        await db.sequelize.sync({ alter: true });
+        console.log("Database synchronized");
 
-	// Initialize the server
-	app.listen(PORT, () => {
-		console.log(`Server is running on port ${PORT}`);
-	});
-}).catch(err => {
-    console.error("Error synchronizing the database:", err);
-});
+        const server = app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
 
+        return server;
+    } catch (err) {
+        console.error("Error synchronizing the database:", err);
+    }
+};
 
+// Export app for testing
+export { app, startServer };
