@@ -1,4 +1,5 @@
 import express from "express";
+import session from "express-session";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import db from "./models/index.js";
@@ -16,6 +17,18 @@ app.use(helmet());
 
 // Parse JSON requests
 app.use(express.json());
+
+// Use express-session middleware
+app.use(session({
+    secret: "sample-secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: false,  // change in prod
+        secure: false,    // Change in prod
+        maxAge: undefined // Change in prod
+    }
+}));
 
 // API routes
 app.use("/api", routes);
