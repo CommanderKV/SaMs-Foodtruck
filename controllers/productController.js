@@ -1,12 +1,11 @@
 import { Router } from 'express';
 import db from '../models/index.js';
 import savePhoto from '../tools/photoSaver.js';
-const router = Router();
 
 // Handle creating errors
 function sendError(res, error, message) {
-    if (error instanceof TypeError) {
-        return res.status(400).json({
+    if (error instanceof Error == false) {
+        return res.status(error.code).json({
             status: "failure",
             message: error.message
         });
@@ -46,16 +45,13 @@ async function getProductById(req, res) {
 
         // Check if the product ID is valid
         if (isNaN(productId) || productId <= 0) {
-            throw new TypeError("Invalid product ID");
+            throw {code: 400, message: "Invalid product ID"};
         }
 
         // Get the product details
         const product = await db.products.findOne({ where: { id: productId } });
         if (!product) {
-            return res.status(404).json({
-                status: "failure",
-                message: "Product not found"
-            });
+            throw {code: 404, message: "Product not found"}
         }
 
         // Get the ingredients
@@ -76,45 +72,45 @@ function checkProductDetails(productDetails) {
     // Check if the name is set
     if (productDetails.name != undefined) {
         if (typeof productDetails.name !== "string") {
-            throw new TypeError("Name must be a string");
+            throw {code: 400, message: "Name must be a string"};
         }
         if (productDetails.name.trim() === "") {
-            throw new TypeError("Name must not be empty");
+            throw {code: 400, message: "Name must not be empty"};
         }
-    } else {throw new TypeError("Name is required");}
+    } else {throw {code: 400, message: "Name is required"};}
     
     // Check if the description is set
     if (productDetails.description != undefined) {
         if (typeof productDetails.description !== "string") {
-            throw new TypeError("Description must be a string");
+            throw {code: 400, message: "Description must be a string"};
         }
         if (productDetails.description.trim() === "") {
-            throw new TypeError("Description must not be empty");
+            throw {code: 400, message: "Description must not be empty"};
         }
-    } else {throw new TypeError("Description is required");}
+    } else {throw {code: 400, message: "Description is required"};}
 
     // Check if the price is set
     if (productDetails.price != undefined) {
         if (typeof productDetails.price !== "number") {
-            throw new TypeError("Price must be a decimal number");
+            throw {code: 400, message: "Price must be a decimal number"};
         }
         if (productDetails.price <= 0) {
-            throw new TypeError("Price must be greater than 0");
+            throw {code: 400, message: "Price must be greater than 0"};
         }
     } else {
-        throw new TypeError("Price is required");
+        throw {code: 400, message: "Price is required"};
     }
 
     // Check if the photo is set
     if (productDetails.photo != undefined) {
         if (typeof productDetails.photo !== "string") {
-            throw new TypeError("Photo must be a string");
+            throw {code: 400, message: "Photo must be a string"};
         }
         if (productDetails.photo.trim() === "") {
-            throw new TypeError("Photo must not be empty");
+            throw {code: 400, message: "Photo must not be empty"};
         }
     }else {
-        throw new TypeError("Photo is required");
+        throw {code: 400, message: "Photo is required"};
     }
 }
 
@@ -122,7 +118,7 @@ function checkProductDetails(productDetails) {
 async function checkIngredientDetails(ingredients) {
     // Make sure ingredients are arrays
     if (!Array.isArray(ingredients)) {
-        throw new TypeError("Ingredients must be an array");
+        throw {code: 400, message: "Ingredients must be an array"};
     }
 
     // Go through each ingredient
@@ -130,38 +126,40 @@ async function checkIngredientDetails(ingredients) {
         // Check if the id is set
         if (ingredient.id != undefined) {
             if (typeof ingredient.id !== "number") {
-                throw new TypeError("Ingredient ID must be a number");
+                throw {code: 400, message: "Ingredient ID must be a number"};
             }
             if (ingredient.id <= 0) {
-                throw new TypeError("Invalid ingredient ID");
+                throw {code: 400, message: "Invalid ingredient ID"};
             }
             
             // Check the ingredient ID
             const foundIngredient = await db.ingredients.findOne({ where: { id: ingredient.id } });
             if (!foundIngredient) {
-                throw new TypeError("Invalid ingredient ID");
+                throw {code: 404, message: "Ingredient not found"};
             }
-        } else {throw new TypeError("Ingredient ID is required");}
+        } else {
+            throw {code: 400, message: "Ingredient ID is required"};
+        }
 
         // Check if the quantity is set
         if (ingredient.quantity != undefined) {
             if (typeof ingredient.quantity !== "number") {
-                throw new TypeError("Ingredient quantity must be a number");
+                throw {code: 400, message: "Ingredient quantity must be a number"};
             }
             if (ingredient.quantity <= 0) {
-                throw new TypeError("Ingredient quantity must be greater than 0");
+                throw {code: 400, message: "Ingredient quantity must be greater than 0"};
             }
-        } else {throw new TypeError("Ingredient quantity is required");}
+        } else {throw {code: 400, message: "Ingredient quantity is required"};}
 
         // Check if the measurement is set
         if (ingredient.measurement != undefined) {
             if (typeof ingredient.measurement !== "string") {
-                throw new TypeError("Ingredient measurement must be a string");
+                throw {code: 400, message: "Ingredient measurement must be a string"};
             }
             if (ingredient.measurement.trim() === "") {
-                throw new TypeError("Ingredient measurement must not be empty");
+                throw {code: 400, message: "Ingredient measurement must not be empty"};
             }
-        } else {throw new TypeError("Ingredient measurement is required");}
+        } else {throw {code: 400, message: "Ingredient measurement is required"};}
     }
 }
 
@@ -221,12 +219,26 @@ async function createProduct(req, res) {
 };
 
 // Check for an id and return updatedProducts
-async function getUpdatedProduct(updatedProductDetails) {
+async function getUpdatedProduct(updatedProductDetails, id) {
     // Check to make sure a product id is given
-    if (updatedProductDetails.id != undefined) {
-        if (typeof updatedProductDetails.id !== "number") { throw new TypeError("Product ID must be a number"); }
-        if (updatedProductDetails.id <= 0) { throw new TypeError("Invalid product ID"); }
-    } else { throw new TypeError("Product ID is required"); }
+    if (updatedProductDetails.id != undefined || id != undefined) {
+        if (typeof updatedProductDetails.id !== "number" || typeof id !== "number") { 
+            throw {code: 400, message: "Product ID must be a number"}; 
+        }
+        if (updatedProductDetails.id <= 0 || id <= 0) { 
+            throw {code: 400, message: "Invalid product ID"}; 
+        }
+        if (updatedProductDetails.id != id) {
+            throw {code: 400, message: "Product ID mismatch"};
+        }
+
+        const foundProduct = await db.products.findByPk(updatedProductDetails.id);
+        if (!foundProduct) {
+            throw {code: 404, message: "Product not found"};
+        }
+    } else { 
+        throw {code: 400, message: "Product ID is required"}; 
+    }
 
     // Create updated product values
     let updatedProduct = {};
@@ -245,7 +257,7 @@ async function getUpdatedProduct(updatedProductDetails) {
 async function checkIngredientDetailsForUpdate(ingredients) {
     // Make sure ingredients are arrays
     if (!Array.isArray(ingredients)) {
-        throw new TypeError("Ingredients must be an array");
+        throw {code: 400, message: "Ingredients must be an array"};
     }
 
     // Go through each ingredient
@@ -253,63 +265,55 @@ async function checkIngredientDetailsForUpdate(ingredients) {
         // Check if the id is set
         if (ingredient.id != undefined) {
             if (typeof ingredient.id !== "number") {
-                throw new TypeError("Ingredient ID must be a number");
+                throw {code: 400, message: "Ingredient ID must be a number"};
             }
             if (ingredient.id <= 0) {
-                throw new TypeError("Invalid ingredient ID");
+                throw {code: 400, message: "Invalid ingredient ID"};
             }
             
             // Check the ingredient ID
             const foundIngredient = await db.ingredients.findOne({ where: { id: ingredient.id } });
             if (!foundIngredient) {
-                throw new TypeError("Invalid ingredient ID");
+                throw {code: 404, message: "Ingredient not found"};
             }
-        } else {throw new TypeError("Ingredient ID is required");}
+        } else {throw {code: 400, message: "Ingredient ID is required"};}
 
         // Check if the quantity is set
         if (ingredient.quantity != undefined) {
             if (typeof ingredient.quantity !== "number") {
-                throw new TypeError("Ingredient quantity must be a number");
+                throw {code: 400, message: "Ingredient quantity must be a number"};
             }
             if (ingredient.quantity <= 0) {
-                throw new TypeError("Ingredient quantity must be greater than 0");
+                throw {code: 400, message: "Ingredient quantity must be greater than 0"};
             }
         }
         // Check if the measurement is set
         if (ingredient.measurement != undefined) {
             if (typeof ingredient.measurement !== "string") {
-                throw new TypeError("Ingredient measurement must be a string");
+                throw {code: 400, message: "Ingredient measurement must be a string"};
             }
             if (ingredient.measurement.trim() === "") {
-                throw new TypeError("Ingredient measurement must not be empty");
+                throw {code: 400, message: "Ingredient measurement must not be empty"};
             }
         }
         
         if (ingredient.quantity === undefined && ingredient.measurement === undefined){
-            throw new TypeError("Ingredient needs quantity or measurement");
+            throw {code: 400, message: "Ingredient needs quantity or measurement"};
         }
     }
 }
 
-// PUT: /update
+// PUT: /update/:id
 async function updateProduct (req, res) {
     try {
         const updatedProductDetails = req.body;
+        const productId = req.params.id !== undefined ? Number(req.params.id) : undefined;
         
         /////////////////////////////
         //  Check body parameters  //
         /////////////////////////////
         // Get the updated product
-        const updatedProduct = await getUpdatedProduct(updatedProductDetails);
-        
-        // Check if the product exists
-        const foundProduct = await db.products.findOne({ where: { id: updatedProductDetails.id } });
-        if (!foundProduct) {
-            return res.status(404).json({
-                status: "failure",
-                message: "Product not found"
-            })
-        }
+        const updatedProduct = await getUpdatedProduct(updatedProductDetails, productId);
 
         // Check the ingredients
         if (updatedProductDetails.ingredients != undefined) {
@@ -375,27 +379,31 @@ async function updateProduct (req, res) {
     }
 };
 
-// DELETE: /delete
+// DELETE: /delete/:id
 async function deleteProduct(req, res) {
     try {
-        const productId = req.body.id;
+        const productId = req.params.id != undefined ? Number(req.params.id) : undefined;
+        const productIdCheck = req.body.id;
 
         // Check if the product ID is valid
-        if (productId != undefined) {
-            if (typeof productId !== "number") {
-                throw new TypeError("Product ID must be a number");
+        if (productId != undefined || productIdCheck != undefined) {
+            if (typeof productId !== "number" || typeof productIdCheck !== "number") {
+                throw {code: 400, message: "Product ID must be a number"};
             }
-            if (productId <= 0) {
-                throw new TypeError("Invalid product ID");
+            if (productId <= 0 && productIdCheck <= 0) {
+                throw {code: 400, message: "Invalid product ID"};
+            }
+            if (productId != productIdCheck) {
+                throw {code: 400, message: "Product ID mismatch"};
             }
 
             // Check if the product exists
             const foundProduct = await db.products.findOne({ where: { id: productId } });
             if (!foundProduct) {
-                throw new TypeError("Invalid product ID");
+                throw {code: 404, message: "Product not found"};
             }
         } else {
-            throw new TypeError("Product ID is required");
+            throw {code: 400, message: "Product ID is required"};
         }
 
         // Delete the product

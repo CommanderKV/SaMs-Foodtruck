@@ -3,11 +3,10 @@ import request from 'supertest'; // assuming you're using supertest for API test
 import { app } from '../app.js'; // Path to the Express app
 import db from '../models/index.js'; // Path to your DB models
 import fs from 'fs';
-import { measureMemory } from 'vm';
 
-describe('Product Controller Tests', () => {
-
-    // Clear the database before each test
+describe('Product Controller', () => {
+    // Clear the DB and generate the testing data
+    let testingData = {}
     beforeEach(async () => {
         // Clear the ingredients to products table
         await db.ingredientsToProducts.findAll().then((item) => {
@@ -29,18 +28,32 @@ describe('Product Controller Tests', () => {
                 await ingredient.destroy();
             });
         });
+
+        // Generate testing data
+        testingData.ingredient = await db.ingredients.create({
+            name: "testIngredient",
+            description: "Testing",
+            quantity: 3,
+            photo: "testing.png",
+            productLink: "testing",
+            price: 3.99
+        });
+        testingData.product = await db.products.create({
+            name: "Test Product",
+            description: "Test Description",
+            price: 9.99,
+            photo: "test-photo-path"
+        });
+        testingData.link = await db.ingredientsToProducts.create({
+            productId: testingData.product.id,
+            ingredientId: testingData.ingredient.id,
+            quantity: 3,
+            measurement: "tests"
+        });
     });
 
-    describe('GET /api/v1/products', () => {
+    describe('GET /', () => {
         it('should fetch all products', async () => {
-            // Create a sample product to test
-            await db.products.create({
-                name: 'Test Product',
-                description: 'Test Description',
-                price: 9.99,
-                photo: 'test-photo-path'
-            });
-
             // Send a GET request to the endpoint
             const response = await request(app).get('/api/v1/products');
 
@@ -51,34 +64,18 @@ describe('Product Controller Tests', () => {
         });
     });
 
-    describe("GET /api/v1/products/:id", () => {
+    describe("GET /:id", () => {
         it("Should get one product by id", async () => {
-            // Create a sample product to test
-            const product = await db.products.create({
-                name: "Test Product",
-                description: "Test Description",
-                price: 9.99,
-                photo: "test-photo-path"
-            });
-
             // Send a GET request to the endpoint
-            const response = await request(app).get(`/api/v1/products/${product.id}`);
+            const response = await request(app).get(`/api/v1/products/${testingData.product.id}`);
 
             // Check the status code and response structure
             expect(response.status).toBe(200);
             expect(response.body.status).toBe("success");
-            expect(response.body.data.id).toBe(product.id);
+            expect(response.body.data.id).toBe(testingData.product.id);
         });
 
         it("Should return 404 if the product is not found", async () => {
-            // Create a sample product to test
-            await db.products.create({
-                name: "Test Product",
-                description: "Test Description",
-                price: 9.99,
-                photo: "test-photo-path"
-            });
-
             // Send a GET request to the endpoint
             const response = await request(app).get("/api/v1/products/1");
 
@@ -89,7 +86,7 @@ describe('Product Controller Tests', () => {
         });
     });
 
-    describe("POST /api/v1/products/create", () => {
+    describe("POST /create", () => {
         it("Should create a new product", async () => {
             // Converting image into base64
             const image = fs.readFileSync("./public/imgs/github.png");
@@ -130,7 +127,6 @@ describe('Product Controller Tests', () => {
         });
 
         it("Should return 400 if the price is invalid", async () => {
-
             const response = await request(app)
                 .post("/api/v1/products/create")
                 .send({
@@ -163,42 +159,19 @@ describe('Product Controller Tests', () => {
         });
     });
 
-    describe("PUT /update", () => {
+    describe("PUT /update/:id", () => {
         it("Should update product and ingredients", async () => {
-            // Create a sample product to test
-            const ingredient = await db.ingredients.create({
-                name: "testIngredient",
-                description: "Testing",
-                quantity: 3,
-                photo: "testing.png",
-                productLink: "testing",
-                price: 3.99
-            });
-            const product = await db.products.create({
-                name: "Test Product",
-                description: "Test Description",
-                price: 9.99,
-                photo: "test-photo-path"
-            });
-            await db.ingredientsToProducts.create({
-                productId: product.id,
-                ingredientId: ingredient.id,
-                quantity: 3,
-                measurement: "tests"
-            });
-            
-
             // Send a PUT request to the endpoint
             const response = await request(app)
-                .put("/api/v1/products/update")
+                .put(`/api/v1/products/update/${testingData.product.id}`)
                 .send({
-                    id: product.id,
+                    id: testingData.product.id,
                     name: "Updated Product",
                     description: "Updated Description",
                     price: 19.99,
                     ingredients: [
                         {
-                            id: ingredient.id,
+                            id: testingData.ingredient.id,
                             quantity: 2,
                         }
                     ]
@@ -211,7 +184,7 @@ describe('Product Controller Tests', () => {
 
             // Check if the product was updated in the database
             const updatedProduct = await db.products.findByPk(
-                product.id, 
+                testingData.product.id, 
                 { 
                     include: db.ingredients
                 }
@@ -223,47 +196,23 @@ describe('Product Controller Tests', () => {
             // Check if the ingredient was updated in the database
             const updatedIngredientLink = await db.ingredientsToProducts.findOne({
                 where: {
-                    productId: product.id,
-                    ingredientId: ingredient.id
+                    productId: testingData.product.id,
+                    ingredientId: testingData.ingredient.id
                 }
             });
 
             expect(updatedIngredientLink.quantity).toBe(2);
-
         });
 
         it("Should update ingredients linked to a product", async () => {
-            // Create a sample product to test
-            const ingredient = await db.ingredients.create({
-                name: "testIngredient",
-                description: "Testing",
-                quantity: 3,
-                photo: "testing.png",
-                productLink: "testing",
-                price: 3.99
-            });
-            const product = await db.products.create({
-                name: "Test Product",
-                description: "Test Description",
-                price: 9.99,
-                photo: "test-photo-path"
-            });
-            await db.ingredientsToProducts.create({
-                productId: product.id,
-                ingredientId: ingredient.id,
-                quantity: 3,
-                measurement: "tests"
-            });
-            
-
             // Send a PUT request to the endpoint
             const response = await request(app)
-                .put("/api/v1/products/update")
+                .put(`/api/v1/products/update/${testingData.product.id}`)
                 .send({
-                    id: product.id,
+                    id: testingData.product.id,
                     ingredients: [
                         {
-                            id: ingredient.id,
+                            id: testingData.ingredient.id,
                             quantity: 2,
                             measurement: "tester"
                         }
@@ -278,21 +227,39 @@ describe('Product Controller Tests', () => {
             // Check if the ingredients were updated
             const updatedIngredientLink = await db.ingredientsToProducts.findOne({
                 where: {
-                    productId: product.id,
-                    ingredientId: ingredient.id
+                    productId: testingData.product.id,
+                    ingredientId: testingData.ingredient.id
                 }
             });
 
             expect(updatedIngredientLink.quantity).toBe(2);
             expect(updatedIngredientLink.measurement).toBe("tester");
-
         });
 
-        
+        it("Should fail with nothing defined", async () => {
+            // Send a PUT request to the endpoint
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    ingredients: [
+                        {
+                            id: testingData.ingredient.id
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Ingredient needs quantity or measurement");
+        });
+
         it("Should fail with no id given", async () => {
             // Send a request
             const response = await request(app)
-                .put("/api/v1/products/update");
+                .put("/api/v1/products/update/")
+                .send();
             
             // Check the request
             expect(response.status).toBe(400);
@@ -301,19 +268,11 @@ describe('Product Controller Tests', () => {
         });
 
         it("Should fail with wrong id given", async () => {
-            // Create a sample product to test
-            const product = await db.products.create({
-                name: "Test Product",
-                description: "Test Description",
-                price: 9.99,
-                photo: "test-photo-path"
-            });
-
             // Send the request
             const response = await request(app)
-                .put("/api/v1/products/update")
+                .put(`/api/v1/products/update/${testingData.product.id + 1}`)
                 .send({
-                    id: product.id+1,
+                    id: testingData.product.id + 1,
                     description: "hi"
                 });
             
@@ -322,7 +281,74 @@ describe('Product Controller Tests', () => {
             expect(response.body.status).toBe("failure");
             expect(response.body.message).toBe("Product not found");
         });
+    });
 
+    describe("DELETE /delete/:id", () => {
+        it("Should delete the product and any attached links from the db", async () => {
+            // Run the api
+            const response = await request(app)
+                .delete(`/api/v1/products/delete/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id
+                });
+
+            // Check the response
+            expect(response.status).toBe(200);
+            expect(response.body.status).toBe("success");
+            expect(response.body.message).toBe("Product deleted successfully");
+
+            // Make sure the product is deleted
+            const deletedProduct = await db.products.findByPk(testingData.product.id);
+            expect(deletedProduct).toBeNull();
+
+            // Make sure the link is deleted
+            const deletedLink = await db.ingredientsToProducts.findByPk(testingData.link.id);
+            expect(deletedLink).toBeNull();
+
+            // Make sure the ingredient is still there
+            const notDeletedIngredient = await db.ingredients.findByPk(testingData.ingredient.id);
+            expect(notDeletedIngredient).toBeDefined();
+        });
+
+        it("Should throw error when wrong ID is given", async () => {
+            // Send request
+            const response = await request(app)
+                .delete(`/api/v1/products/delete/${testingData.product.id + 1}`)
+                .send({
+                    id: testingData.product.id + 1
+                });
+
+            // Check the response
+            expect(response.status).toBe(404);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Product not found")
+        });
+
+        it("Should throw an error when no ID is given", async () => {
+            // Send request
+            const response = await request(app)
+                .delete(`/api/v1/products/delete/`)
+                .send();
+            
+            // Check response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Product ID is required");
+        });
+
+        it("Should throw an error when ids don't match", async () => {
+            // Send request
+            const response = await request(app)
+                .delete(`/api/v1/products/delete/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id + 1
+                });
+
+            // Check response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Product ID mismatch");
+        });
     });
 });
 
