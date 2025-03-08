@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import imageType from "image-type"; // Security check for image buffer
+import imageType from "image-type";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/gif"];
@@ -21,12 +21,12 @@ const savePhoto = async (base64String) => {
     // Validate Base64 format
     const matches = base64String.match(/^data:(image\/\w+);base64,(.+)$/);
     if (!matches) {
-        throw new TypeError("Invalid Base64 format");
+        throw {code: 400, message: "Invalid Base64 format"};
     }
 
     const mimeType = matches[1];
     if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
-        throw new TypeError("Unsupported file type");
+        throw {code: 400, message: "Unsupported file type"};
     }
 
     // Decode Base64 to Buffer
@@ -35,12 +35,12 @@ const savePhoto = async (base64String) => {
     // Security check: Ensure buffer is an actual image
     const detectedType = await imageType(buffer);
     if (!detectedType || !ALLOWED_MIME_TYPES.includes(detectedType.mime)) {
-        throw new TypeError("Invalid or corrupted image file");
+        throw {code: 400, message: "Invalid or corrupted image file"};
     }
 
     // File size limit
     if (buffer.length > MAX_FILE_SIZE) {
-        throw new TypeError("File too large (Max: 5MB)");
+        throw {code: 400, message: "File too large (Max: 5MB)"};
     }
 
     // Generate secure file name
