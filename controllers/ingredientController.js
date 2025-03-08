@@ -2,10 +2,24 @@ import { Router } from 'express';
 import db from '../models/index.js';
 import savePhoto from '../tools/photoSaver.js';
 
-const router = Router();
+// Handle creating errors
+function sendError(res, error, message) {
+    if (error instanceof Error == false) {
+        return res.status(error.code).json({
+            status: "failure",
+            message: error.message
+        });
+    } else {
+        console.log(`${message} --ERROR-- ${error}`);
+        return res.status(500).json({
+            status: "failure",
+            message: message
+        });
+    }
+}
 
 // GET: /
-router.get("/", async (req, res) => {
+async function getIngredients(req, res) {
     try {
         // Get all ingredients
         const ingredients = await db.ingredients.findAll();
@@ -18,30 +32,31 @@ router.get("/", async (req, res) => {
 
     // Catch any database errors
     } catch (error) {
-        console.error("Error fetching ingredients:", error);
-        res.status(500).json({
-            status: "failure",
-            message: "Failed to fetch ingredients"
-        });
+        return sendError(res, error, "Failed to fetch ingredients");
     }
-});
+}
 
 // GET: /:id
-router.get("/:id", async (req, res) => {
+async function getIngredientById(req, res) {
     try {
         // Get the ingredient ID
         const id = req.params.id;
         
         if (id !== undefined) {
             if (isNaN(id)) {
-                throw new ValueError("Invalid ingredient ID");
+                throw { code: 400, message: "Invalid ingredient ID" };
             }
             if (id < 0) {
-                throw new ValueError("Invalid ingredient ID");
+                throw { code: 400, message: "Invalid ingredient ID" };
             }
-        } else {throw new ValueError("Ingredient ID Required");}
+        } else {
+            throw { code: 400, message: "Ingredient ID Required" };
+        }
 
         const ingredient = await db.ingredients.findByPk(id);
+        if (ingredient === null) {
+            throw { code: 404, message: "Ingredient not found" };
+        }
 
         // Return the ingredient
         res.status(200).json({
@@ -51,161 +66,203 @@ router.get("/:id", async (req, res) => {
 
     // Catch any database errors
     } catch (error) {
-        if (typeof error == "ValueError") {
-            res.status(400).json({
-                status: "failure",
-                message: error.message
-            });
-        } else {
-            console.error("Error fetching ingredient:", error);
-            res.status(500).json({
-                status: "failure",
-                message: "Failed to fetch ingredient"
-            });
-        }
+        return sendError(res, error, "Failed to fetch ingredient");
     }
-});
+}
+
+// Check to make sure all required fields are present
+function checkIngredientParams(ingredient) {
+    if (ingredient.name === undefined || typeof ingredient.name !== "string") {
+        throw { code: 400, message: "Name required" };
+    }
+
+    if (ingredient.description === undefined || typeof ingredient.description !== "string") {
+        throw { code: 400, message: "Description required" };
+    }
+    
+    if (ingredient.quantity !== undefined) {
+        if (typeof ingredient.quantity !== "number") {
+            throw { code: 400, message: "Quantity required" };
+        } else if (ingredient.quantity < 0) {
+            throw { code: 400, message: "Quantity must be greater than 0" };
+        }
+    } else {
+        throw { code: 400, message: "Quantity required" };
+    }
+
+    if (ingredient.photo === undefined || typeof ingredient.photo !== "string") {
+        throw { code: 400, message: "Photo required" };
+    }
+
+    if (ingredient.productLink === undefined || typeof ingredient.productLink !== "string") {
+        throw { code: 400, message: "Product link required" };
+    }
+    
+    if (ingredient.price !== undefined) {
+        if (typeof ingredient.price !== "number") {
+            throw { code: 400, message: "Price required" };
+        } else if (ingredient.price < 0) {
+            throw { code: 400, message: "Price must be greater than 0" };
+        }
+    } else {
+        throw { code: 400, message: "Price required" };
+    }
+}
 
 // POST: /create
-router.post("/create", async (req, res) => {
+async function createIngredient(req, res) {
     try {
         // Get the ingredient data
-        let { name, description, quantity, photo, productLnk, price } = req.body;
+        const ingredientParams = req.body;
 
         // Check the ingredient data
-        if (name === undefined || typeof name !== "string") {
-            throw new ValueError("Ingredient name required");
-        }
-        if (description === undefined || typeof description !== "string") {
-            throw new ValueError("Invalid ingredient description");
-        }
-        if (quantity === undefined || (typeof quantity !== "number" || quantity < 0)) {
-            throw new ValueError("Invalid ingredient quantity");
-        }
-        if (photo === undefined || typeof photo !== "string") {
-            throw new ValueError("Invalid ingredient photo");
-        } else {
-            photo = await savePhoto(photo);
-        }
-        if (productLnk === undefined || typeof productLnk !== "string") {
-            throw new ValueError("Invalid ingredient product link");
-        }
-        if (price === undefined || (typeof price !== "number" || price < 0)) {
-            throw new ValueError("Invalid ingredient price");
-        }
+        checkIngredientParams(ingredientParams);
 
         // Create the ingredient
         const ingredient = await db.ingredients.create({
-            name: name,
-            description: description,
-            quantity: quantity,
-            photo: photo,
-            productLnk: productLnk,
-            price: price
+            name: ingredientParams.name,
+            description: ingredientParams.description,
+            quantity: ingredientParams.quantity,
+            photo: await savePhoto(ingredientParams.photo),
+            productLink: ingredientParams.productLink,
+            price: ingredientParams.price
         });
 
         // Return the ingredient
         res.status(201).json({
             status: "success",
-            data: null
+            data: ingredient
         });
     } catch (error) {
-        if (typeof error == "ValueError") {
-            res.status(400).json({
-                status: "failure",
-                message: error.message
-            });
-        } else {
-            console.error("Error creating ingredient:", error);
-            res.status(500).json({
-                status: "failure",
-                message: "Failed to create ingredient"
-            });
+        sendError(res, error, "Failed to create ingredient");
+    }
+}
+
+function checkUpdateIngredientDetails(ingredientDetails) {
+    if (ingredientDetails.name !== undefined) {
+        if (typeof ingredientDetails.name !== "string") {
+            throw { code: 400, message: "Name must be a string" };
         }
     }
-});
 
-// PUT: /update
-router.put("/update", async (req, res) => {
+    if (ingredientDetails.description !== undefined) {
+        if (typeof ingredientDetails.description !== "string") {
+            throw { code: 400, message: "Description required" };
+        }
+    }
+    
+    if (ingredientDetails.quantity !== undefined) {
+        if (typeof ingredientDetails.quantity !== "number") {
+            throw { code: 400, message: "Quantity required" };
+        } else if (ingredientDetails.quantity < 0) {
+            throw { code: 400, message: "Quantity must be greater than 0" };
+        }
+    }
+
+    if (ingredientDetails.photo !== undefined) {
+        if (typeof ingredientDetails.photo !== "string") {
+            throw { code: 400, message: "Photo required" };
+        }
+    }
+
+    if (ingredientDetails.productLink !== undefined) {
+        if (typeof ingredientDetails.productLink !== "string") {
+            throw { code: 400, message: "Product link required" };
+        }
+    }
+    
+    if (ingredientDetails.price !== undefined) {
+        if (typeof ingredientDetails.price !== "number") {
+            throw { code: 400, message: "Price required" };
+        } else if (ingredientDetails.price < 0) {
+            throw { code: 400, message: "Price must be greater than 0" };
+        }
+    }
+}
+
+// PUT: /update/:id
+async function updateIngredient(req, res) {
     try {
         // Get possible fields to update
-        let { id, name, description, quantity, photo, productLnk, price } = req.body;
+        const ingredientDetails = req.body;
+        const id = req.params.id != undefined ? Number(req.params.id) : req.params.id;
 
-        // Check the ingredient data
-        if (id === undefined || isNaN(id) || id < 0) {
-            throw new ValueError("Invalid ingredient ID");
+        // Check the values
+        checkUpdateIngredientDetails(ingredientDetails);
+
+        if (id !== undefined && ingredientDetails.id !== undefined) {
+            if (isNaN(id) || id < 0 || isNaN(ingredientDetails.id) || ingredientDetails.id < 0) {
+                throw { code: 400, message: "Invalid ingredient ID" };
+            }
+            if (id !== ingredientDetails.id) {
+                throw { code: 400, message: "Ingredient ID mismatch" };
+            }
+        } else {
+            throw { code: 400, message: "Ingredient ID required" };
         }
 
-        // Get the ingredient
-        const ingredient = await db.ingredients.findOne({ where: { id: id } });
-
-        // Check if the ingredient exists
+        let ingredient = await db.ingredients.findByPk(id);
         if (!ingredient) {
-            throw new ValueError("Ingredient not found");
+            throw { code: 404, message: "Ingredient not found" };
         }
 
         // Update the ingredient
         let updatedIngredient = {};
-        if (name !== undefined && typeof name === "string") {
-            updatedIngredient.name = name;
+        for (const key in ingredientDetails) {
+            if (ingredientDetails[key] != undefined && (key != "id" || key != "photo")) {
+                updatedIngredient[key] = ingredientDetails[key];
+            }
         }
-        if (description !== undefined && typeof description === "string") {
-            updatedIngredient.description = description;
-        }
-        if (quantity !== undefined && (typeof quantity === "number" && quantity >= 0)) {
-            updatedIngredient.quantity = quantity;
-        }
-        if (photo !== undefined && typeof photo === "string") {
-            updatedIngredient.photo = await savePhoto(photo);
-        }
-        if (productLnk !== undefined && typeof productLnk === "string") {
-            updatedIngredient.productLnk = productLnk;
-        }
-        if (price !== undefined && (typeof price === "number" && price >= 0)) {
-            updatedIngredient.price = price;
+        
+        if (ingredientDetails.photo !== undefined) {
+            updatedIngredient.photo = await savePhoto(ingredientDetails.photo);
+        } else {
+            updatedIngredient.photo = ingredient.photo;
         }
 
-        // Save the ingredient
-        await db.ingredients.update(
-            updatedIngredient,
-            {
-                where: {
-                    id: id
+        // Update the ingredient
+        if (Object.keys(updatedIngredient).length !== 0) {
+            await db.ingredients.update(
+                updatedIngredient,
+                { 
+                    where: { 
+                        id: id 
+                    } 
                 }
-            }
-        );
+            )
+        }
 
         // Return that we updated the ingredient
         res.status(200).json({
             status: "success",
-            data: null
+            data: "Ingredient updated"
         });
 
     } catch (error) {
-        if (typeof error == "ValueError") {
-            res.status(400).json({
-                status: "failure",
-                message: error.message
-            });
-        } else {
-            console.error("Error updating ingredient:", error);
-            res.status(500).json({
-                status: "failure",
-                message: "Failed to update ingredient"
-            });
-        }
+        sendError(res, error, "Failed to update ingredient");
     }
-});
+}
 
 // DELETE: /delete
-router.delete("/delete", async (req, res) => {
+async function deleteIngredient(req, res) {
     try {
         // Get the ingredient ID
         const id = req.body.id;
+        const id2 = req.params.id != undefined ? Number(req.params.id) : req.params.id;
 
         // Check the ingredient ID
-        if (id === undefined || isNaN(id) || id < 0) {
-            throw new ValueError("Invalid ingredient ID");
+        if (id !== undefined && id2 !== undefined) {
+            if (isNaN(id) || isNaN(id2)) {
+                throw { code: 400, message: "Invalid ingredient ID" };
+            }
+            if (id < 0 || id2 < 0) {
+                throw { code: 400, message: "Invalid ingredient ID" };
+            }
+            if (id !== id2) {
+                throw { code: 400, message: "Ingredient ID mismatch" };
+            }
+        } else {
+            throw { code: 400, message: "Ingredient ID required" };
         }
 
         // Get the ingredient
@@ -213,7 +270,7 @@ router.delete("/delete", async (req, res) => {
 
         // Check if the ingredient exists
         if (ingredient === null) {
-            throw new ValueError("Ingredient not found");
+            throw { code: 404, message: "Ingredient not found" };
         }
 
         // Delete the ingredient
@@ -222,22 +279,17 @@ router.delete("/delete", async (req, res) => {
         // Return the ingredient
         res.status(200).json({
             status: "success",
-            data: null
+            data: "Ingredient deleted"
         });
     } catch (error) {
-        if (typeof error == "ValueError") {
-            res.status(400).json({
-                status: "failure",
-                message: error.message
-            });
-        } else {
-            console.error("Error deleting ingredient:", error);
-            res.status(500).json({
-                status: "failure",
-                message: "Failed to delete ingredient"
-            });
-        }
+        sendError(res, error, "Failed to delete ingredient");
     }
-});
+}
 
-export default router;
+export default {
+    getIngredients,
+    getIngredientById,
+    createIngredient,
+    updateIngredient,
+    deleteIngredient
+};

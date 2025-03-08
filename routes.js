@@ -6,6 +6,7 @@ const router = Router();
 //  Importing all controllers  //
 /////////////////////////////////
 import productController from "./controllers/productController.js";
+import ingredientController from "./controllers/ingredientController.js";
 
 //////////////////////////////////////////////
 //  Bellow are all the routes for this api  //
@@ -38,15 +39,77 @@ const routes = [
                         function: productController.updateProduct
                     },
                     {
+                        path: "/update/:id",
+                        method: "PUT",
+                        function: productController.updateProduct
+                    },
+                    {
                         path: "/delete",
                         method: "DELETE",
                         function: productController.deleteProduct
+                    },
+                    {
+                        path: "/delete/:id",
+                        method: "DELETE",
+                        function: productController.deleteProduct
+                    }
+                ]
+            },
+            {
+                path: "ingredients",
+                routes: [
+                    {
+                        path: "",
+                        method: "GET",
+                        function: ingredientController.getIngredients
+                    },
+                    {
+                        path: "/:id",
+                        method: "GET",
+                        function: ingredientController.getIngredientById
+                    },
+                    {
+                        path: "/create",
+                        method: "POST",
+                        function: ingredientController.createIngredient
+                    },
+                    {
+                        path: "/update",
+                        method: "PUT",
+                        function: ingredientController.updateIngredient
+                    },
+                    {
+                        path: "/update/:id",
+                        method: "PUT",
+                        function: ingredientController.updateIngredient
+                    },
+                    {
+                        path: "/delete",
+                        method: "DELETE",
+                        function: ingredientController.deleteIngredient
+                    },
+                    {
+                        path: "/delete/:id",
+                        method: "DELETE",
+                        function: ingredientController.deleteIngredient
                     }
                 ]
             }
         ]
     }
 ]
+
+// All routes need to be authenticated TODO: Uncomment in prod
+// router.use((req, res, next) => {
+//     if (req.session.authenticated) {
+//         next();
+//     } else {
+//         res.status(401).send({ 
+//             status: "failed", 
+//             message: "Not authenticated" 
+//         });
+//     }
+// });
 
 // Initializing the routes
 for (const route of routes) {
