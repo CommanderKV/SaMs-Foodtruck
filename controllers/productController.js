@@ -29,12 +29,12 @@ async function getAllProducts(req, res) {
                     as: "ingredients",
                     through: {
                         attributes: ["quantity", "measurement"]
-                    }
+                    },
+                    attributes: ["name", "description", "price", "photo"]
                 },
                 {
                     model: db.categories,
                     as: "categories",
-                    
                 }
             ]
         });
@@ -443,21 +443,20 @@ async function updateProduct (req, res) {
 
                 // Check if we want to add a new ingredient link
                 if (prevIngredients[id] === undefined) {
+                    let update = {};
                     if (updateIngredients[id].quantity === undefined) {
                         throw {code: 400, message: "Ingredient quantity is required"};
-                    } else if (updateIngredients[id].measurement === undefined) {
+                    } else {
+                        update.quantity = updateIngredients[id].quantity;
+                    }
+                    
+                    if (updateIngredients[id].measurement === undefined) {
                         throw {code: 400, message: "Ingredient measurement is required"};
+                    } else {
+                        update.measurement = updateIngredients[id].measurement;
                     }
 
-                    await product.addIngredient(
-                        updateIngredients[id].id, 
-                        {
-                            through: {
-                                quantity: updateIngredients[id].quantity,
-                                measurement: updateIngredients[id].measurement
-                            }
-                        }
-                    );
+                    await product.addIngredient(id, {through: update});
                 
                 // Check if we want to update an existing ingredient link
                 } else {
@@ -465,11 +464,9 @@ async function updateProduct (req, res) {
                     let update = {};
                     if (updateIngredients[id].quantity != undefined) {
                         update.quantity = updateIngredients[id].quantity;
-                        ingredient.ingredientsToProducts.changed("quantity", true);
                     }
                     if (updateIngredients[id].measurement != undefined) {
                         update.measurement = updateIngredients[id].measurement;
-                        ingredient.ingredientsToProducts.changed("measurement", true);
                     }
 
                     await ingredient.ingredientsToProducts.update(update);
