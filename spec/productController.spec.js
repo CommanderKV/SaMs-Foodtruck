@@ -1,7 +1,7 @@
 // Import the required modules
-import request from 'supertest'; // assuming you're using supertest for API tests
-import { app } from '../app.js'; // Path to the Express app
-import db from '../models/index.js'; // Path to your DB models
+import request from 'supertest';
+import { app } from '../app.js';
+import db from '../models/index.js';
 import fs from 'fs';
 
 describe('Product Controller', () => {
@@ -62,7 +62,7 @@ describe('Product Controller', () => {
     });
 
     describe('GET /', () => {
-        it('should fetch all products', async () => {
+        it("should fetch all products", async () => {
             // Send a GET request to the endpoint
             const response = await request(app).get('/api/v1/products');
 
@@ -72,7 +72,7 @@ describe('Product Controller', () => {
             expect(response.body.data).toHaveSize(1);
         });
 
-        it('should return an empty array if no products exist', async () => {
+        it("should return an empty array if no products exist", async () => {
             // Clear the products table
             await db.products.destroy({ where: {} });
 
@@ -238,7 +238,7 @@ describe('Product Controller', () => {
             const updatedProduct = await db.products.findByPk(testingData.product.id);
             expect(updatedProduct.name).toBe("Updated Product");
             expect(updatedProduct.description).toBe("Updated Description");
-            expect(updatedProduct.price).toBe("19.99");
+            expect(updatedProduct.price).toBe(19.99);
 
             // Check if the ingredient was updated in the database
             const ingredients = await updatedProduct.getIngredients();
@@ -763,6 +763,34 @@ describe('Product Controller', () => {
             expect(response.status).toBe(400);
             expect(response.body.status).toBe("failure");
             expect(response.body.message).toBe("Product ID must be a number");
+        });
+
+        it("should return 400 if the product ID is not a number", async () => {
+            // Send request
+            const response = await request(app)
+                .delete(`/api/v1/products/delete/not-a-number`)
+                .send({
+                    id: "not-a-number"
+                });
+
+            // Check response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Product ID must be a number");
+        });
+
+        it("should return 400 if the product ID is less than or equal to 0", async () => {
+            // Send request
+            const response = await request(app)
+                .delete(`/api/v1/products/delete/0`)
+                .send({
+                    id: 0
+                });
+
+            // Check response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Invalid product ID");
         });
     });
 });
