@@ -22,7 +22,22 @@ function sendError(res, error, message) {
 async function getAllProducts(req, res) {
     try {
         // Get all menu items
-        const menuItems = await db.products.findAll();
+        const menuItems = await db.products.findAll({
+            include: [
+                {
+                    model: db.ingredients,
+                    as: "ingredients",
+                    through: {
+                        attributes: ["quantity", "measurement"]
+                    }
+                },
+                {
+                    model: db.categories,
+                    as: "categories",
+                    
+                }
+            ]
+        });
 
         // Send response
         res.status(200).json({
@@ -287,6 +302,7 @@ async function checkIngredientDetailsForUpdate(ingredients) {
                 throw {code: 400, message: "Ingredient quantity must be greater than 0"};
             }
         }
+
         // Check if the measurement is set
         if (ingredient.measurement != undefined) {
             if (typeof ingredient.measurement !== "string") {
@@ -301,6 +317,61 @@ async function checkIngredientDetailsForUpdate(ingredients) {
             throw {code: 400, message: "Ingredient needs quantity or measurement"};
         }
     }
+}
+
+async function checkCategories(categories) {
+    // Check if we have either of th proper keys
+    if (categories.add == undefined && categories.remove == undefined) {
+        throw {code: 400, message: "Categories must have either add or remove options"};
+    }
+    
+    // Check if the add key is an array
+    if (categories.add != undefined) {
+        if (!Array.isArray(categories.add)) {
+            throw {code: 400, message: "Add categories must be an array"};
+        }
+        
+        // Check to make sure all values are numbers
+        for (const category of categories.add) {
+            if (typeof category !== "number") {
+                throw {code: 400, message: "Category ID must be a number"};
+            }
+            if (category <= 0) {
+                throw {code: 400, message: "Invalid category ID"};
+            }
+
+            // Check to see if the category exists
+            const foundCategory = await db.categories.findOne({ where: { id: category } });
+            if (!foundCategory) {
+                throw {code: 404, message: `Category with ${category} id not found`};
+            }
+        }
+    }
+
+    // Check if the remove key is an array
+    if (categories.remove != undefined) {
+        if (!Array.isArray(categories.remove)) {
+            throw {code: 400, message: "Remove categories must be an array"};
+        }
+
+        // Check to make sure all values are numbers
+        for (const category of categories.remove) {
+            if (typeof category !== "number") {
+                throw {code: 400, message: "Category ID must be a number"};
+            }
+            if (category <= 0) {
+                throw {code: 400, message: "Invalid category ID"};
+            }
+
+            // Check to see if the category exists
+            const foundCategory = await db.categories.findOne({ where: { id: category } });
+            if (!foundCategory) {
+                throw {code: 404, message: `Category with ${category} id not found`};
+            }
+        }
+    }
+
+    return categories;
 }
 
 // PUT: /update/:id
@@ -322,6 +393,7 @@ async function updateProduct (req, res) {
 
         // If the product doesn't need to be updated
         // then don't touch the product
+        const product = await db.products.findByPk(updatedProductDetails.id);
         if (Object.keys(updatedProduct).length !== 0) {
             // Update product parameters
             await db.products.update(
@@ -332,38 +404,105 @@ async function updateProduct (req, res) {
                     } 
                 }
             );
+            await product.save();
         }
 
         // Update ingredients
         if (updatedProductDetails.ingredients != undefined) {
-            // Create a map for old ingredients
+            // Structure
+            // ingredients: [
+            //     {
+            //          id: 1,
+            //          quantity: 1, Optional
+            //          measurement: "cup", Optional
+            //          remove: true Optional
+            //     },
+            //     ...
+            // ]
+            const ingredients = await product.getIngredients();
+
+            // Create a map of ingredients
             const ingredientLinks = updatedProductDetails.ingredients;
-            const oldIngredientLinks = ingredientLinks.reduce((acc, x) => {
+            const updateIngredients = ingredientLinks.reduce((acc, x) => {
+                acc[x.id] = x;
+                return acc;
+            }, {});
+            const prevIngredients = ingredients.reduce((acc, x) => {
                 acc[x.id] = x;
                 return acc;
             }, {});
 
-            for (const id in oldIngredientLinks) {
-                // Get the ingredient link
-                let link = await db.ingredientsToProducts.findOne({
-                    where: {
-                        productId: updatedProductDetails.id,
-                        ingredientId: id
+            // Loop through the updated ingredients
+            for (const id of Object.keys(updateIngredients)) {
+                const updateIngredient = updateIngredients[id];
+
+                // Check if we want to remove the ingredient link
+                if (updateIngredient.remove != undefined) {
+                    await product.removeIngredient(id);
+                }
+
+                // Check if we want to add a new ingredient link
+                if (prevIngredients[id] === undefined) {
+                    if (updateIngredients[id].quantity === undefined) {
+                        throw {code: 400, message: "Ingredient quantity is required"};
+                    } else if (updateIngredients[id].measurement === undefined) {
+                        throw {code: 400, message: "Ingredient measurement is required"};
                     }
-                });
-                let oldIngredientLink = oldIngredientLinks[id];
+
+                    await product.addIngredient(
+                        updateIngredients[id].id, 
+                        {
+                            through: {
+                                quantity: updateIngredients[id].quantity,
+                                measurement: updateIngredients[id].measurement
+                            }
+                        }
+                    );
                 
-                // Check for values to update
-                if (oldIngredientLink.quantity != undefined) {
-                    link.quantity = oldIngredientLink.quantity;
-                    link.changed("quantity", true);
+                // Check if we want to update an existing ingredient link
+                } else {
+                    let ingredient = prevIngredients[id];
+                    let update = {};
+                    if (updateIngredients[id].quantity != undefined) {
+                        update.quantity = updateIngredients[id].quantity;
+                        ingredient.ingredientsToProducts.changed("quantity", true);
+                    }
+                    if (updateIngredients[id].measurement != undefined) {
+                        update.measurement = updateIngredients[id].measurement;
+                        ingredient.ingredientsToProducts.changed("measurement", true);
+                    }
+
+                    await ingredient.ingredientsToProducts.update(update);
                 }
-                if (oldIngredientLink.measurement != undefined) {
-                    link.measurement = oldIngredientLink.measurement;
-                    link.changed("measurement", true);
-                }
+            }
+        }
+
+        // Update categories
+        if (updatedProductDetails.categories != undefined) {
+            // Structure
+            // categories: {
+            //   add: [1, 2, 3],
+            //   remove: [4, 5, 6]
+            // }
+            const categories = await checkCategories(updatedProductDetails.categories);
+            const product = await db.products.findByPk(updatedProductDetails.id);
+            const currentCategories = await product.getCategories();
+
+            // Loop through the current categories
+            for (const category of currentCategories) {
+                let id = category.id;
                 
-                await link.save();
+                // Remove the category if it's in the remove list
+                // and in the current categories 
+                if (categories.remove != undefined && categories.remove.includes(id)) {
+                    await product.removeCategory(id);
+                }
+
+                // Add the category if it's in the add list
+                // and not in the current categories
+                if (categories.add != undefined && !categories.add.includes(id)) {
+                    await product.addCategory(id);
+                }
             }
         }
 
