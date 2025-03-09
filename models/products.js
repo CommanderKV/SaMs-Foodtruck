@@ -54,6 +54,7 @@ export default (sequelize, DataTypes) => {
 			{ 
 				through: "categoriesToProducts",
 				onDelete: "CASCADE",
+				timestamps: false,
 			}
 		);
         Product.hasMany(models.optionGroups, {

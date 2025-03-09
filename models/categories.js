@@ -9,6 +9,16 @@ export default (sequelize, DataTypes) => {
 					notEmpty: true,
 				},
 			},
+			description: {
+				type: DataTypes.STRING,
+				allowNull: true,
+				validate: {
+					notEmpty: true,
+				},
+			},
+		},
+		{
+			timestamps: false,
 		}
 	);
 
@@ -18,6 +28,7 @@ export default (sequelize, DataTypes) => {
             { 
                 through: "categoriesToProducts",
 				onDelete: "CASCADE",
+				timestamps: false,
             }
         );
     };

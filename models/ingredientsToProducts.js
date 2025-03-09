@@ -16,6 +16,9 @@ export default (sequelize, DataTypes) => {
                     notEmpty: true,
                 }
             },
+		},
+		{
+			timestamps: false,
 		}
 	);
 

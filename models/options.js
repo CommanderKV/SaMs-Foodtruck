@@ -28,6 +28,9 @@ export default (sequelize, DataTypes) => {
                     min: 1,
                 },
 			},
+		},
+		{
+			timestamps: false,
 		}
 	);
 
