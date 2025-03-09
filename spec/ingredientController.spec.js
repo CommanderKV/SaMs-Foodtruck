@@ -244,7 +244,7 @@ describe("Ingredient Controller", () => {
             expect(ingredient.quantity).toBe(20);
             expect(ingredient.photo != "test.jpg").toBeTruthy();
             expect(ingredient.productLink).toBe("http://updated.com");
-            expect(ingredient.price).toBe("3.99");
+            expect(ingredient.price).toBe(3.99);
 
             // Remove the photo
             fs.unlinkSync(`./public/imgs/${ingredient.photo}`);
