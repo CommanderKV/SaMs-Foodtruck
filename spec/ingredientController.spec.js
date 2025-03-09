@@ -48,6 +48,19 @@ describe("Ingredient Controller", () => {
             expect(response.body.status).toBe("success");
             expect(response.body.data.length).toBe(2);
         });
+
+        it("should return an empty array if no ingredients exist", async () => {
+            // Clear the ingredients table
+            await db.ingredients.destroy({ where: {} });
+
+            // Send a GET request to the endpoint
+            const response = await request(app).get('/api/v1/ingredients');
+
+            // Check the status code and response structure
+            expect(response.status).toBe(200);
+            expect(response.body.status).toBe('success');
+            expect(response.body.data).toHaveSize(0);
+        });
     });
 
     describe("GET /:id", () => {
@@ -79,6 +92,16 @@ describe("Ingredient Controller", () => {
                 .get(`/api/v1/ingredients/-1`);
             
             // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Invalid ingredient ID");
+        });
+
+        it("should return 400 if the ingredient ID is not a number", async () => {
+            // Send a GET request to the endpoint
+            const response = await request(app).get("/api/v1/ingredients/not-a-number");
+
+            // Check the status code and response structure
             expect(response.status).toBe(400);
             expect(response.body.status).toBe("failure");
             expect(response.body.message).toBe("Invalid ingredient ID");
@@ -215,6 +238,82 @@ describe("Ingredient Controller", () => {
             expect(response.body.status).toBe("failure");
             expect(response.body.message).toBe("Price required");
         });
+
+        it("should return 400 if the quantity is not a number", async () => {
+            // Send a POST request to the endpoint
+            const response = await request(app)
+                .post("/api/v1/ingredients/create")
+                .send({
+                    name: "New Ingredient",
+                    description: "This is a new ingredient",
+                    quantity: "not-a-number",
+                    photo: testingData.encodedImage,
+                    productLink: "http://new.com",
+                    price: 2.99
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Quantity required");
+        });
+
+        it("should return 400 if the price is not a number", async () => {
+            // Send a POST request to the endpoint
+            const response = await request(app)
+                .post("/api/v1/ingredients/create")
+                .send({
+                    name: "New Ingredient",
+                    description: "This is a new ingredient",
+                    quantity: 10,
+                    photo: testingData.encodedImage,
+                    productLink: "http://new.com",
+                    price: "not-a-number"
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Price required");
+        });
+
+        it("should return 400 if the quantity is less than 0", async () => {
+            // Send a POST request to the endpoint
+            const response = await request(app)
+                .post("/api/v1/ingredients/create")
+                .send({
+                    name: "New Ingredient",
+                    description: "This is a new ingredient",
+                    quantity: -1,
+                    photo: testingData.encodedImage,
+                    productLink: "http://new.com",
+                    price: 2.99
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Quantity must be greater than 0");
+        });
+
+        it("should return 400 if the price is less than 0", async () => {
+            // Send a POST request to the endpoint
+            const response = await request(app)
+                .post("/api/v1/ingredients/create")
+                .send({
+                    name: "New Ingredient",
+                    description: "This is a new ingredient",
+                    quantity: 10,
+                    photo: testingData.encodedImage,
+                    productLink: "http://new.com",
+                    price: -1
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Price must be greater than 0");
+        });
     });
 
     describe("PUT /update/:id", () => {
@@ -330,6 +429,94 @@ describe("Ingredient Controller", () => {
             expect(response.body.status).toBe("failure");
             expect(response.body.message).toBe("Ingredient ID required");
         });
+
+        it("should return 400 if the ingredient ID is not a number", async () => {
+            // Send request
+            const response = await request(app)
+                .put(`/api/v1/ingredients/update/not-a-number`)
+                .send({
+                    id: "not-a-number"
+                });
+
+            // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Invalid ingredient ID");
+        });
+
+        it("should return 400 if the ingredient ID is less than 0", async () => {
+            // Send request
+            const response = await request(app)
+                .put(`/api/v1/ingredients/update/-1`)
+                .send({
+                    id: -1
+                });
+
+            // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Invalid ingredient ID");
+        });
+
+        it("should return 400 if the quantity is not a number", async () => {
+            // Send request
+            const response = await request(app)
+                .put(`/api/v1/ingredients/update/${testingData.ingredient.id}`)
+                .send({
+                    id: testingData.ingredient.id,
+                    quantity: "not-a-number"
+                });
+
+            // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Quantity required");
+        });
+
+        it("should return 400 if the price is not a number", async () => {
+            // Send request
+            const response = await request(app)
+                .put(`/api/v1/ingredients/update/${testingData.ingredient.id}`)
+                .send({
+                    id: testingData.ingredient.id,
+                    price: "not-a-number"
+                });
+
+            // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Price required");
+        });
+
+        it("should return 400 if the quantity is less than 0", async () => {
+            // Send request
+            const response = await request(app)
+                .put(`/api/v1/ingredients/update/${testingData.ingredient.id}`)
+                .send({
+                    id: testingData.ingredient.id,
+                    quantity: -1
+                });
+
+            // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Quantity must be greater than 0");
+        });
+
+        it("should return 400 if the price is less than 0", async () => {
+            // Send request
+            const response = await request(app)
+                .put(`/api/v1/ingredients/update/${testingData.ingredient.id}`)
+                .send({
+                    id: testingData.ingredient.id,
+                    price: -1
+                });
+
+            // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Price must be greater than 0");
+        });
     });
 
     describe("DELETE /delete/:id", () => {
@@ -385,6 +572,46 @@ describe("Ingredient Controller", () => {
                 .delete(`/api/v1/ingredients/delete/`)
                 .send({});
             
+            // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Ingredient ID required");
+        });
+
+        it("should return 400 if the ingredient ID is not a number", async () => {
+            // Send request
+            const response = await request(app)
+                .delete(`/api/v1/ingredients/delete/not-a-number`)
+                .send({
+                    id: "not-a-number"
+                });
+
+            // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Invalid ingredient ID");
+        });
+
+        it("should return 400 if the ingredient ID is less than 0", async () => {
+            // Send request
+            const response = await request(app)
+                .delete(`/api/v1/ingredients/delete/-1`)
+                .send({
+                    id: -1
+                });
+
+            // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Invalid ingredient ID");
+        });
+
+        it("should return 400 if the ingredient ID is missing in the request body", async () => {
+            // Send request
+            const response = await request(app)
+                .delete(`/api/v1/ingredients/delete/${testingData.ingredient.id}`)
+                .send({});
+
             // Check the response
             expect(response.status).toBe(400);
             expect(response.body.status).toBe("failure");
