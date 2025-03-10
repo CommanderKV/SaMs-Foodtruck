@@ -7,6 +7,7 @@ const router = Router();
 /////////////////////////////////
 import productController from "./controllers/productController.js";
 import ingredientController from "./controllers/ingredientController.js";
+import categoryController from "./controllers/categoryController.js";
 
 //////////////////////////////////////////////
 //  Bellow are all the routes for this api  //
@@ -92,6 +93,46 @@ const routes = [
                         path: "/delete/:id",
                         method: "DELETE",
                         function: ingredientController.deleteIngredient
+                    }
+                ]
+            },
+            {
+                path: "categories",
+                routes: [
+                    {
+                        path: "",
+                        method: "GET",
+                        function: categoryController.getCategories
+                    },
+                    {
+                        path: "/:id",
+                        method: "GET",
+                        function: categoryController.getCategoryById
+                    },
+                    {
+                        path: "/create",
+                        method: "POST",
+                        function: categoryController.createCategory
+                    },
+                    {
+                        path: "/update",
+                        method: "PUT",
+                        function: categoryController.updateCategory
+                    },
+                    {
+                        path: "/update/:id",
+                        method: "PUT",
+                        function: categoryController.updateCategory
+                    },
+                    {
+                        path: "/delete",
+                        method: "DELETE",
+                        function: categoryController.deleteCategory
+                    },
+                    {
+                        path: "/delete/:id",
+                        method: "DELETE",
+                        function: categoryController.deleteCategory
                     }
                 ]
             }
