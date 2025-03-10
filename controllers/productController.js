@@ -35,6 +35,23 @@ async function getAllProducts(req, res) {
                 {
                     model: db.categories,
                     as: "categories",
+                },
+                {
+                    model: db.optionGroups,
+                    as: "optionGroups",
+                    include: [
+                        {
+                            model: db.options,
+                            as: "options",
+                            include: [
+                                {
+                                    model: db.ingredients,
+                                    as: "ingredient",
+                                    attributes: ["name", "description", "price", "photo"]
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         });
@@ -64,7 +81,42 @@ async function getProductById(req, res) {
         }
 
         // Get the product details
-        const product = await db.products.findOne({ where: { id: productId } });
+        const product = await db.products.findOne({ 
+            where: { 
+                id: productId 
+            },
+            include: [
+                {
+                    model: db.ingredients,
+                    as: "ingredients",
+                    through: {
+                        attributes: ["quantity", "measurement"]
+                    },
+                    attributes: ["name", "description", "price", "photo"]
+                },
+                {
+                    model: db.categories,
+                    as: "categories",
+                },
+                {
+                    model: db.optionGroups,
+                    as: "optionGroups",
+                    include: [
+                        {
+                            model: db.options,
+                            as: "options",
+                            include: [
+                                {
+                                    model: db.ingredients,
+                                    as: "ingredient",
+                                    attributes: ["name", "description", "price", "photo"]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        });
         if (!product) {
             throw {code: 404, message: "Product not found"}
         }

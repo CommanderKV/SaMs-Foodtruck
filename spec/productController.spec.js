@@ -76,6 +76,29 @@ describe('Product Controller', () => {
     });
 
     describe('GET /', () => {
+        it("should fetch all products with ingredients, categories, and option groups", async () => {
+            // Send a GET request to the endpoint
+            const response = await request(app)
+                .get('/api/v1/products');
+
+            // Check the status code and response structure
+            expect(response.status).toBe(200);
+            expect(response.body.status).toBe('success');
+            expect(response.body.data).toHaveSize(1);
+
+            // Check the product structure
+            const product = response.body.data[0];
+            expect(product.ingredients).toHaveSize(1);
+            expect(product.categories).toHaveSize(1);
+            expect(product.optionGroups).toHaveSize(1);
+
+            // Check the option group structure
+            const optionGroup = product.optionGroups[0];
+            expect(optionGroup.options).toHaveSize(1);
+            const option = optionGroup.options[0];
+            expect(option.ingredient).toBeDefined();
+        });
+
         it("should fetch all products", async () => {
             // Send a GET request to the endpoint
             const response = await request(app).get('/api/v1/products');
@@ -101,6 +124,29 @@ describe('Product Controller', () => {
     });
 
     describe("GET /:id", () => {
+        it("should get one product by id with ingredients, categories, and option groups", async () => {
+            // Send a GET request to the endpoint
+            const response = await request(app)
+                .get(`/api/v1/products/${testingData.product.id}`);
+
+            // Check the status code and response structure
+            expect(response.status).toBe(200);
+            expect(response.body.status).toBe("success");
+            expect(response.body.data.id).toBe(testingData.product.id);
+
+            // Check the product structure
+            const product = response.body.data;
+            expect(product.ingredients).toHaveSize(1);
+            expect(product.categories).toHaveSize(1);
+            expect(product.optionGroups).toHaveSize(1);
+
+            // Check the option group structure
+            const optionGroup = product.optionGroups[0];
+            expect(optionGroup.options).toHaveSize(1);
+            const option = optionGroup.options[0];
+            expect(option.ingredient).toBeDefined();
+        });
+
         it("should get one product by id", async () => {
             // Send a GET request to the endpoint
             const response = await request(app).get(`/api/v1/products/${testingData.product.id}`);
