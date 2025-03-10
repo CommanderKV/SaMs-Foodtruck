@@ -59,6 +59,20 @@ describe('Product Controller', () => {
         });
 
         await testingData.product.addCategory(testingData.category);
+
+        // Create a new option group
+        testingData.optionGroup = await testingData.product.createOptionGroup({
+            sectionName: "New Option Group"
+        });
+
+        // Create a new option
+        testingData.option = await testingData.optionGroup.createOption({
+            ingredientId: testingData.ingredient.id,
+            priceAdjustment: 0.50,
+            multipleChoice: true,
+            minQuantity: 1,
+            maxQuantity: 1
+        });
     });
 
     describe('GET /', () => {
@@ -676,6 +690,341 @@ describe('Product Controller', () => {
             expect(response.status).toBe(400);
             expect(response.body.status).toBe("failure");
             expect(response.body.message).toBe("Product ID must be a number");
+        });
+
+        it("should update option groups linked to a product", async () => {
+            // Send a PUT request to update the option group
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    options: [
+                        {
+                            id: testingData.optionGroup.id,
+                            sectionName: "Updated Option Group",
+                            items: [
+                                {
+                                    id: testingData.option.id,
+                                    priceAdjustment: 1.00,
+                                    multipleChoice: false,
+                                    minQuantity: 2,
+                                    maxQuantity: 2
+                                }
+                            ]
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(200);
+            expect(response.body.status).toBe("success");
+            expect("message" in response.body.data).toBeTruthy();
+
+            // Check if the option group was updated in the database
+            const updatedOptionGroup = await db.optionGroups.findByPk(testingData.optionGroup.id);
+            expect(updatedOptionGroup.sectionName).toBe("Updated Option Group");
+
+            // Check if the option was updated in the database
+            const updatedOption = await db.options.findByPk(testingData.option.id);
+            expect(updatedOption.priceAdjustment).toBe(1.00);
+            expect(updatedOption.multipleChoice).toBe(false);
+            expect(updatedOption.minQuantity).toBe(2);
+            expect(updatedOption.maxQuantity).toBe(2);
+        });
+
+        it("should return 400 if option group ID is not a number", async () => {
+            // Send a PUT request with invalid option group ID
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    options: [
+                        {
+                            id: "not-a-number",
+                            sectionName: "Updated Option Group"
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("OptionGroup ID must be a number");
+        });
+
+        it("should return 404 if option group is not found", async () => {
+            // Send a PUT request with non-existing option group ID
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    options: [
+                        {
+                            id: 9999, // Assuming this ID does not exist
+                            sectionName: "Updated Option Group"
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(404);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("OptionGroup not found");
+        });
+
+        it("should return 400 if option ID is not a number", async () => {
+            // Send a PUT request with invalid option ID
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    options: [
+                        {
+                            id: testingData.optionGroup.id,
+                            sectionName: "Updated Option Group",
+                            items: [
+                                {
+                                    id: "not-a-number",
+                                    priceAdjustment: 1.00
+                                }
+                            ]
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Option ID must be a number");
+        });
+
+        it("should return 404 if option is not found", async () => {
+            // Send a PUT request with non-existing option ID
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    options: [
+                        {
+                            id: testingData.optionGroup.id,
+                            sectionName: "Updated Option Group",
+                            items: [
+                                {
+                                    id: 9999, // Assuming this ID does not exist
+                                    priceAdjustment: 1.00
+                                }
+                            ]
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(404);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Option not found");
+        });
+
+        it("should return 400 if option ingredientId is not a number", async () => {
+            // Send a PUT request with invalid ingredientId
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    options: [
+                        {
+                            id: testingData.optionGroup.id,
+                            sectionName: "Updated Option Group",
+                            items: [
+                                {
+                                    id: testingData.option.id,
+                                    ingredientId: "not-a-number"
+                                }
+                            ]
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Option ingredientId must be a number");
+        });
+
+        it("should return 404 if option ingredient is not found", async () => {
+            // Send a PUT request with non-existing ingredientId
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    options: [
+                        {
+                            id: testingData.optionGroup.id,
+                            sectionName: "Updated Option Group",
+                            items: [
+                                {
+                                    id: testingData.option.id,
+                                    ingredientId: 9999 // Assuming this ID does not exist
+                                }
+                            ]
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(404);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Ingredient not found");
+        });
+
+        it("should return 400 if option priceAdjustment is not a number", async () => {
+            // Send a PUT request with invalid priceAdjustment
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    options: [
+                        {
+                            id: testingData.optionGroup.id,
+                            sectionName: "Updated Option Group",
+                            items: [
+                                {
+                                    id: testingData.option.id,
+                                    priceAdjustment: "not-a-number"
+                                }
+                            ]
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Option priceAdjustment must be a number");
+        });
+
+        it("should return 400 if option multipleChoice is not a boolean", async () => {
+            // Send a PUT request with invalid multipleChoice
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    options: [
+                        {
+                            id: testingData.optionGroup.id,
+                            sectionName: "Updated Option Group",
+                            items: [
+                                {
+                                    id: testingData.option.id,
+                                    multipleChoice: "not-a-boolean"
+                                }
+                            ]
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Option multipleChoice must be a boolean");
+        });
+
+        it("should return 400 if option minQuantity is not a number", async () => {
+            // Send a PUT request with invalid minQuantity
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    options: [
+                        {
+                            id: testingData.optionGroup.id,
+                            sectionName: "Updated Option Group",
+                            items: [
+                                {
+                                    id: testingData.option.id,
+                                    minQuantity: "not-a-number"
+                                }
+                            ]
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Option minQuantity must be a number");
+        });
+
+        it("should return 400 if option maxQuantity is not a number", async () => {
+            // Send a PUT request with invalid maxQuantity
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    options: [
+                        {
+                            id: testingData.optionGroup.id,
+                            sectionName: "Updated Option Group",
+                            items: [
+                                {
+                                    id: testingData.option.id,
+                                    maxQuantity: "not-a-number"
+                                }
+                            ]
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Option maxQuantity must be a number");
+        });
+
+        it("should return 400 if option remove is not a boolean", async () => {
+            // Send a PUT request with invalid remove
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    options: [
+                        {
+                            id: testingData.optionGroup.id,
+                            sectionName: "Updated Option Group",
+                            items: [
+                                {
+                                    id: testingData.option.id,
+                                    remove: "not-a-boolean"
+                                }
+                            ]
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Option remove must be a boolean");
+        });
+
+        it("should return 400 if optionGroup remove is not a boolean", async () => {
+            // Send a PUT request with invalid optionGroup remove
+            const response = await request(app)
+                .put(`/api/v1/products/update/${testingData.product.id}`)
+                .send({
+                    id: testingData.product.id,
+                    options: [
+                        {
+                            id: testingData.optionGroup.id,
+                            sectionName: "Updated Option Group",
+                            remove: "not-a-boolean"
+                        }
+                    ]
+                });
+
+            // Check the status code and response structure
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("OptionGroup remove must be a boolean");
         });
     });
 
