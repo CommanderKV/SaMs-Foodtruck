@@ -374,6 +374,130 @@ async function checkCategories(categories) {
     return categories;
 }
 
+// Check the options for updates
+async function checkUpdateOptions(options) {
+    // Make sure that the options are an array
+    if (!Array.isArray(options)) {
+        throw {code: 400, message: "Options must be an array"};
+    }
+
+    // Check the optionGroups
+    for (const optionGroup of options) {
+        // Check if the ID is set
+        if (optionGroup.id != undefined) {
+            if (typeof optionGroup.id !== "number") {
+                throw {code: 400, message: "OptionGroup ID must be a number"};
+            }
+            if (optionGroup.id <= 0) {
+                throw {code: 400, message: "Invalid OptionGroup ID"};
+            }
+
+            // Make sure the optionGroup exists
+            if (!await db.optionGroups.findOne({ where: { id: optionGroup.id } })) {
+                throw {code: 404, message: "OptionGroup not found"};
+            }
+        } else {throw {code: 400, message: "OptionGroup ID is required"};}
+
+        // Check if the sectionName is set
+        if (optionGroup.sectionName != undefined) {
+            if (typeof optionGroup.sectionName !== "string") {
+                throw {code: 400, message: "OptionGroup sectionName must be a string"};
+            }
+            if (optionGroup.sectionName.trim() === "") {
+                throw {code: 400, message: "OptionGroup sectionName must not be empty"};
+            }
+        }
+
+        // Check the items if set
+        if (optionGroup.items != undefined) {
+            if (!Array.isArray(optionGroup.items)) {
+                throw {code: 400, message: "OptionGroup items must be an array"};
+            }
+
+            // Check the items
+            for (const option of optionGroup.items) {
+                // Check if the ID is set
+                if (option.id != undefined) {
+                    if (typeof option.id !== "number") {
+                        throw {code: 400, message: "Option ID must be a number"};
+                    }
+                    if (option.id <= 0) {
+                        throw {code: 400, message: "Invalid Option ID"};
+                    }
+
+                    // Make sure the option exists
+                    if (!await db.options.findOne({ where: { id: option.id } })) {
+                        throw {code: 404, message: "Option not found"};
+                    }
+                } else {throw {code: 400, message: "Option ID is required"};}
+
+                // Check if the ingredient ID is set
+                if (option.ingredientId != undefined) {
+                    if (typeof option.ingredientId !== "number") {
+                        throw {code: 400, message: "Option ingredientId must be a number"};
+                    }
+                    if (option.ingredientId <= 0) {
+                        throw {code: 400, message: "Invalid Option ingredientId"};
+                    }
+
+                    // Make sure the ingredient exists
+                    if (!await db.ingredients.findByPk(option.ingredientId)) {
+                        throw {code: 404, message: "Ingredient not found"};
+                    }
+                }
+
+                // Check if the priceAdjustment is set
+                if (option.priceAdjustment != undefined) {
+                    if (typeof option.priceAdjustment !== "number") {
+                        throw {code: 400, message: "Option priceAdjustment must be a number"};
+                    }
+                }
+
+                // Check if the multipleChoice is set
+                if (option.multipleChoice != undefined) {
+                    if (typeof option.multipleChoice !== "boolean") {
+                        throw {code: 400, message: "Option multipleChoice must be a boolean"};
+                    }
+                }
+
+                // Check if the minQuantity is set
+                if (option.minQuantity != undefined) {
+                    if (typeof option.minQuantity !== "number") {
+                        throw {code: 400, message: "Option minQuantity must be a number"};
+                    }
+                    if (option.minQuantity < 0) {
+                        throw {code: 400, message: "Option minQuantity must be >= 0"};
+                    }
+                }
+
+                // Check if the maxQuantity is set
+                if (option.maxQuantity != undefined) {
+                    if (typeof option.maxQuantity !== "number") {
+                        throw {code: 400, message: "Option maxQuantity must be a number"};
+                    }
+                    if (option.maxQuantity < 1) {
+                        throw {code: 400, message: "Option maxQuantity must be >= 1"};
+                    }
+                }
+
+                // Check if the remove is set
+                if (option.remove != undefined) {
+                    if (typeof option.remove !== "boolean") {
+                        throw {code: 400, message: "Option remove must be a boolean"};
+                    }
+                }
+            }
+        }
+
+        // Check if the remove is set
+        if (optionGroup.remove != undefined) {
+            if (typeof optionGroup.remove !== "boolean") {
+                throw {code: 400, message: "OptionGroup remove must be a boolean"};
+            }
+        }
+    }
+}
+
 // PUT: /update/:id
 async function updateProduct (req, res) {
     try {
@@ -404,7 +528,6 @@ async function updateProduct (req, res) {
                     } 
                 }
             );
-            await product.save();
         }
 
         // Update ingredients
@@ -503,6 +626,175 @@ async function updateProduct (req, res) {
             }
         }
 
+        // Update the options
+        if (updatedProductDetails.options != undefined) {
+            // Structure
+            // options: [
+            //     {
+            //         id: 1,
+            //         sectionName: "Toppings",
+            //         items: [
+            //             {
+            //                 id: 1,
+            //                 priceAdjustment: 0.50,
+            //                 multipleChoice: true,
+            //                 minQuantity: 1,
+            //                 maxQuantity: 1,
+            //                 remove: true,
+            //                 ingredientId: 1
+            //             }
+            //         ],
+            //         remove: true
+            //     },
+            //     ...
+            // ]
+            
+            // Get the options
+            const options = updatedProductDetails.options;
+            
+            // Check the options
+            await checkUpdateOptions(options);
+
+            // Make mappings of the options
+            const productOptionGroups = await product.getOptionGroups();
+            const currentOptionGroups = productOptionGroups.reduce((acc, x) => {
+                acc[x.id] = x;
+                return acc;
+            }, {});
+            const optionGroups = options.reduce((acc, x) => {
+                acc[x.id] = x;
+                return acc;
+            }, {});
+
+            // Go through each optionGroup
+            for (const id of Object.keys(optionGroups)) {
+                const optionGroup = optionGroups[id];
+
+                // Check if we want to remove the option group
+                if (optionGroup.remove != undefined) {
+                    await product.removeOptionGroup(id);
+                }
+
+                // Check if we want to add a new option group
+                if (currentOptionGroups[id] === undefined) {
+                    if (optionGroup.sectionName === undefined) {
+                        throw {code: 400, message: "OptionGroup sectionName is required"};
+                    }
+
+                    // Make the new option group
+                    const newOptionGroup = await db.optionGroups.create({
+                        sectionName: update.sectionName
+                    });
+
+                    // Loop through the items and creating the options
+                    for (const item of optionGroup.items) {
+                        let update = {};
+                        
+                        // Get the parameters for the new option
+                        if (item.ingredientId === undefined) {
+                            throw {code: 400, message: "Option ingredientId is required"};
+                        } else {
+                            update.ingredientId = item.ingredientId;
+                        }
+                        if (item.priceAdjustment !== undefined) {
+                            update.priceAdjustment = item.priceAdjustment;
+                        }
+                        if (item.multipleChoice !== undefined) {
+                            update.multipleChoice = item.multipleChoice;
+                        }
+                        if (item.minQuantity !== undefined) {
+                            update.minQuantity = item.minQuantity;
+                        }
+                        if (item.maxQuantity !== undefined) {
+                            update.maxQuantity = item.maxQuantity;
+                        }
+
+                        // Create the new option
+                        const newOption = await newOptionGroup.createOption(update);
+
+                        // Add the ingredient to the option
+                        await newOption.setIngredient(item.ingredientId);
+                    }
+
+                // Check if we want to update an existing option group
+                } else {
+                    const existingOptionGroup = currentOptionGroups[id];
+
+                    // Update the section name
+                    if (optionGroup.sectionName !== undefined) {
+                        existingOptionGroup.sectionName = optionGroup.sectionName;
+                        await existingOptionGroup.save();
+                    }
+
+                    // Loop through the items and update the options
+                    for (const item of optionGroup.items) {
+                        // Remove the option
+                        if (item.remove) {
+                            await existingOptionGroup.removeOption(item.id);
+                        
+                        // Add the option
+                        } else {
+                            // Check if the option exists or not
+                            const existingOption = await db.options.findByPk(item.id);
+                            if (existingOption) {
+                                await existingOption.update({
+                                    priceAdjustment: item.priceAdjustment !== undefined ? item.priceAdjustment : existingOption.priceAdjustment,
+                                    multipleChoice: item.multipleChoice !== undefined ? item.multipleChoice : existingOption.multipleChoice,
+                                    minQuantity: item.minQuantity !== undefined ? item.minQuantity : existingOption.minQuantity,
+                                    maxQuantity: item.maxQuantity !== undefined ? item.maxQuantity : existingOption.maxQuantity
+                                });
+
+                                // Check if the ingredient needs to be updated
+                                if (item.ingredientId !== undefined) {
+                                    if (typeof item.ingredientId !== "number") {
+                                        throw {code: 400, message: "Option ingredientId must be a number"};
+                                    }
+                                    if (item.ingredientId <= 0) {
+                                        throw {code: 400, message: "Invalid Option ingredientId"};
+                                    }
+
+                                    if (!await db.ingredients.findByPk(item.ingredientId)) {
+                                        throw {code: 404, message: "Ingredient not found"};
+                                    }
+                                    await existingOption.setIngredient(item.ingredientId);
+                                }
+                            
+                            // Make a new option
+                            } else {
+                                // Make sure the id is set
+                                if (item.ingredientId !== undefined) {
+                                    if (typeof item.ingredientId !== "number") {
+                                        throw {code: 400, message: "Option ingredientId must be a number"};
+                                    }
+                                    if (item.ingredientId <= 0) {
+                                        throw {code: 400, message: "Invalid Option ingredientId"};
+                                    }
+
+                                    // Make sure the ingredient exists
+                                    if (!await db.ingredients.findByPk(item.ingredientId)) {
+                                        throw {code: 404, message: "Ingredient not found"};
+                                    }
+                                } else {
+                                    throw {code: 400, message: "Option ingredientId is required"};
+                                }
+
+                                const newOption = await existingOptionGroup.createOption({
+                                    ingredientId: item.ingredientId,
+                                    priceAdjustment: item.priceAdjustment,
+                                    multipleChoice: item.multipleChoice,
+                                    minQuantity: item.minQuantity,
+                                    maxQuantity: item.maxQuantity
+                                });
+
+                                await newOption.setIngredient(item.ingredientId);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Send response
         res.status(200).json({
             status: "success",
             data: {
