@@ -1,4 +1,3 @@
-import { Router } from 'express';
 import db from '../models/index.js';
 import savePhoto from '../tools/photoSaver.js';
 
