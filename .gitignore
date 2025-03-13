@@ -1,3 +1,4 @@
 /node_modules
 .env
-relations.draw.io
+
+relations.drawio
