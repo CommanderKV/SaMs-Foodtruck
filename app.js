@@ -3,8 +3,8 @@ import session from "express-session";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import db from "./models/index.js";
+import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
-import swaggerDocument from "./swagger.json" with { type: "json" };
 import routes from "./routes.js";
 
 // Load environment variables
@@ -33,8 +33,22 @@ app.use(session({
 // API routes
 app.use("/api", routes);
 
-// Swagger UI route
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Swagger configuration
+const docOptions = {
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "SaM's Foodtruck API",
+            version: "1.0.0",
+            description: "An API for SaM's Foodtruck",
+        }
+    },
+    apis: ["./controllers/*.yaml"]
+}
+const openapiSpecification = swaggerJSDoc(docOptions);
+
+// // Swagger UI route
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
