@@ -606,7 +606,6 @@
                             type: integer
                             required: true
                             example: 1
-              discounts:
       example:
         name: "Cheeseburger"
         description: "A delicious cheeseburger"
