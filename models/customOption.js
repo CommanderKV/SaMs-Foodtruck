@@ -1,5 +1,3 @@
-import { on } from "supertest/lib/test";
-
 export default (sequelize, DataTypes) => {
 	const CustomOptions = sequelize.define(
 		'customOptions', 
@@ -26,5 +24,5 @@ export default (sequelize, DataTypes) => {
         })
     };
 
-	return Categories;
+	return CustomOptions;
 };
