@@ -1,4 +1,3 @@
-import { Router } from 'express';
 import db from '../models/index.js';
 import savePhoto from '../tools/photoSaver.js';
 
@@ -18,11 +17,82 @@ function sendError(res, error, message) {
     }
 }
 
+function checkGetProduct(products) {
+    // Make sure products is an array
+    if (!Array.isArray(products)) {
+        products = [products];
+    }
+
+    //////////////////////////////////
+    // Make sure the response is in //
+    // the correct format for each  //
+    //           element            //
+    //////////////////////////////////
+    products.forEach(element => {
+        // Make sure that the ingredients are in a list
+        if (element.ingredients && !Array.isArray(element.ingredients)) {
+            element.ingredients = [element.ingredients];
+        }
+
+        // Make sure the categories are in a list
+        if (element.categories && !Array.isArray(element.categories)) {
+            element.categories = [element.categories];
+        }
+
+        // Make sure the optionGroups are in a list
+        if (element.optionGroups && !Array.isArray(element.optionGroups)) {
+            element.optionGroups = [element.optionGroups];
+            element.optionGroups.forEach(optionGroup => {
+                if (optionGroup.options && !Array.isArray(optionGroup.options)) {
+                    optionGroup.options = [optionGroup.options];
+                }
+            });
+        }
+
+        //////////////////////////////////
+        // Preform clean up of response //
+        //////////////////////////////////
+        if (element.ingredients) {
+            element.ingredients.forEach(ingredient => {
+                if (ingredient.ingredientsToProducts) {
+                    ingredient.quantity = ingredient.ingredientsToProducts.quantity;
+                    ingredient.measurement = ingredient.ingredientsToProducts.measurement;
+                    delete ingredient.ingredientsToProducts;
+                }
+            });
+        }
+
+        if (element.categories) {
+            element.categories.forEach(category => {
+                if (category.categoriesToProducts) {
+                    delete category.categoriesToProducts;
+                }
+            });
+        }
+
+        if (element.optionGroups) {
+            element.optionGroups.forEach(optionGroup => {
+                if (optionGroup.options) {
+                    optionGroup.options.forEach(option => {
+                        if (option.optionsToGroups) {
+                            delete option.optionsToGroups;
+                        }
+                    });
+                }
+            });
+        }
+    });
+
+    return products;
+}
+
 // GET: /
 async function getAllProducts(req, res) {
     try {
-        // Get all menu items
-        const menuItems = await db.products.findAll({
+        ////////////////////////
+        // Get all menu items //
+        ////////////////////////
+        var menuItems = await db.products.findAll({
             include: [
                 {
                     model: db.ingredients,
@@ -30,7 +100,7 @@ async function getAllProducts(req, res) {
                     through: {
                         attributes: ["quantity", "measurement"]
                     },
-                    attributes: ["name", "description", "price", "photo"]
+                    attributes: ["id", "name", "description", "price", "photo"]
                 },
                 {
                     model: db.categories,
@@ -39,22 +109,41 @@ async function getAllProducts(req, res) {
                 {
                     model: db.optionGroups,
                     as: "optionGroups",
+                    attributes: ["id", "sectionName"],
                     include: [
                         {
                             model: db.options,
                             as: "options",
+                            attributes: [
+                                "id", 
+                                "priceAdjustment", 
+                                "multipleChoice", 
+                                "minQuantity", 
+                                "maxQuantity"
+                            ],
                             include: [
                                 {
                                     model: db.ingredients,
                                     as: "ingredient",
-                                    attributes: ["name", "description", "price", "photo"]
+                                    attributes: [
+                                        "id", 
+                                        "name", 
+                                        "description", 
+                                        "price", 
+                                        "photo"
+                                    ]
                                 }
                             ]
                         }
                     ]
                 }
-            ]
+            ],
+            raw: true,
+            nest: true
         });
+
+        // Check the response
+        menuItems = checkGetProduct(menuItems);
 
         // Send response
         res.status(200).json({
@@ -80,11 +169,10 @@ async function getProductById(req, res) {
             throw {code: 400, message: "Invalid product ID"};
         }
 
-        // Get the product details
-        const product = await db.products.findOne({ 
-            where: { 
-                id: productId 
-            },
+        ///////////////////////
+        // Get the menu item //
+        ///////////////////////
+        var product = await db.products.findByPk(productId, {
             include: [
                 {
                     model: db.ingredients,
@@ -92,7 +180,7 @@ async function getProductById(req, res) {
                     through: {
                         attributes: ["quantity", "measurement"]
                     },
-                    attributes: ["name", "description", "price", "photo"]
+                    attributes: ["id", "name", "description", "price", "photo"]
                 },
                 {
                     model: db.categories,
@@ -101,28 +189,44 @@ async function getProductById(req, res) {
                 {
                     model: db.optionGroups,
                     as: "optionGroups",
+                    attributes: ["id", "sectionName"],
                     include: [
                         {
                             model: db.options,
                             as: "options",
+                            attributes: [
+                                "id", 
+                                "priceAdjustment", 
+                                "multipleChoice", 
+                                "minQuantity", 
+                                "maxQuantity"
+                            ],
                             include: [
                                 {
                                     model: db.ingredients,
                                     as: "ingredient",
-                                    attributes: ["name", "description", "price", "photo"]
+                                    attributes: [
+                                        "id", 
+                                        "name", 
+                                        "description", 
+                                        "price", 
+                                        "photo"
+                                    ]
                                 }
                             ]
                         }
                     ]
                 }
-            ]
+            ],
+            raw: true,
+            nest: true
         });
         if (!product) {
             throw {code: 404, message: "Product not found"}
         }
 
-        // Get the ingredients
-        product.ingredients = await db.ingredientsToProducts.findAll({ where: { productId: productId } });
+        // Check the response
+        product = checkGetProduct(product);
 
         // Return the product details
         res.status(200).json({
@@ -551,7 +655,7 @@ async function checkUpdateOptions(options) {
 }
 
 // PUT: /update/:id
-async function updateProduct (req, res) {
+async function updateProduct(req, res) {
     try {
         const updatedProductDetails = req.body;
         const productId = req.params.id !== undefined ? Number(req.params.id) : undefined;
