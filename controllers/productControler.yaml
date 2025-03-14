@@ -1,0 +1,1078 @@
+/api/v1/products:
+  get:
+    summary: Get all products
+    tags: [Products]
+    responses:
+      200:
+        description: Returns an array of products
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  value: "success"
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        description: The auto-generated id of the product
+                        type: integer
+                      name:
+                        description: The name of the product
+                        type: string
+                        required: true
+                        example: "Pizza"
+                      description:
+                        description: The description of the product
+                        type: string
+                        required: true
+                        example: "A delicious pizza"
+                      photo:
+                        description: The photo of the product
+                        type: string
+                        required: true
+                        example: "pizza.jpg"
+                      price:
+                        description: The price of the product
+                        type: number
+                        format: float
+                        required: true
+                        example: 9.99
+                      createdAt:
+                        description: The creation date of the product
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        description: The last update date of the product
+                        type: string
+                        format: date-time
+                      ingredients:
+                        description: The ingredients of the product
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              description: The auto-generated id of the ingredient
+                              type: integer
+                            name:
+                              description: The name of the ingredient
+                              type: string
+                            description:
+                              description: A description of the ingredient
+                              type: string
+                            price:
+                              description: The price of the ingredient
+                              type: number
+                              format: double
+                            photo:
+                              description: The photo of the ingredient
+                              type: string
+                            quantity:
+                              description: The quantity of the ingredient
+                              type: integer
+                            measurement:
+                              description: The measurement of the ingredient
+                              type: string
+                      categories:
+                        description: The categories of the product
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              description: The auto-generated id of the category
+                              type: integer
+                            name:
+                              type: string
+                              description: The name of the category
+                            description:
+                              type: string
+                              description: A description of the category
+                      optionGroups:
+                        description: The option groups of the product
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              description: The auto-generated id of the option group
+                              type: integer
+                            sectionName:
+                              description: The name of the section the option group belongs to
+                              type: string
+                            options:
+                              description: The options of the option group
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  id:
+                                    description: The auto-generated id of the option
+                                    type: integer
+                                  priceAdjustment:
+                                    description: The amount by which the price is adjusted
+                                    type: number
+                                    format: double
+                                  multipleChoice:
+                                    description: Whether the option is multiple choice
+                                    type: boolean
+                                  minQuantity:
+                                    description: The minimum quantity of the option
+                                    type: integer
+                                  maxQuantity:
+                                    description: The maximum quantity of the option
+                                    type: integer
+                                  ingredient:
+                                    description: The ingredient of the option
+                                    type: object
+                                    properties:
+                                      id:
+                                        description: The auto-generated id of the ingredient
+                                        type: integer
+                                      name:
+                                        description: The name of the ingredient
+                                        type: string
+                                      description:
+                                        description: A description of the ingredient
+                                        type: string
+                                      price:
+                                        description: The price of the ingredient
+                                        type: number
+                                        format: double
+                                      photo:
+                                        description: The photo of the ingredient
+                                        type: string
+                      discounts:
+                        description: The discounts applicable to the product
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              description: The auto-generated id of the discount
+                              type: integer
+                            name:
+                              description: The name of the discount
+                              type: string
+                            description:
+                              description: The description of the discount
+                              type: string
+                            priceAdjustment:
+                              description: The amount by which the price is adjusted
+                              type: number
+                              format: double
+            example:
+              status: "success"
+              data:
+                - id: 1
+                  name: "Cheeseburger"
+                  description: "A delicious cheeseburger"
+                  photo: "cheeseburger.jpg"
+                  price: 5.99
+                  createdAt: "2021-07-01T00:00:00.000Z"
+                  updatedAt: "2021-07-01T00:00:00.000Z"
+                  ingredients:
+                    - id: 1
+                      name: "Beef Patty"
+                      description: "A juicy beef patty"
+                      price: 2.99
+                      photo: "beef_patty.jpg"
+                      quantity: 1
+                      measurement: "piece"
+                  categories:
+                    - id: 1
+                      name: "Burgers"
+                      description: "Delicious burgers"
+                  optionGroups: 
+                    - id: 1
+                      sectionName: "Toppings"
+                      options:
+                        - id: 1
+                          priceAdjustment: 0.50
+                          multipleChoice: true
+                          minQuantity: 0
+                          maxQuantity: 5
+                          ingredient:
+                            id: 1
+                            name: "Lettuce"
+                            description: "Fresh lettuce"
+                            price: 0.50
+                            photo: "lettuce.jpg"
+      500:
+        description: Error within the server
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  value: "failure"
+                message:
+                  type: string
+                  value: "Failed to retrieve menu items"
+            example:
+              status: "failure"
+              message: "Failed to retrieve menu items"
+
+/api/v1/products/{id}:
+  get:
+    summary: Get all products
+    tags: [Products]
+    parameters:
+      - name: id
+        in: path
+        description: ID of the product to return
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+    responses:
+      200:
+        description: Returns the product
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  value: "success"
+                data:
+                  type: object
+                  properties:
+                    id:
+                      description: The auto-generated id of the product
+                      type: integer
+                    name:
+                      description: The name of the product
+                      type: string
+                      required: true
+                      example: "Pizza"
+                    description:
+                      description: The description of the product
+                      type: string
+                      required: true
+                      example: "A delicious pizza"
+                    photo:
+                      description: The photo of the product
+                      type: string
+                      required: true
+                      example: "pizza.jpg"
+                    price:
+                      description: The price of the product
+                      type: number
+                      format: float
+                      required: true
+                      example: 9.99
+                    createdAt:
+                      description: The creation date of the product
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      description: The last update date of the product
+                      type: string
+                      format: date-time
+                    ingredients:
+                      description: The ingredients of the product
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            description: The auto-generated id of the ingredient
+                            type: integer
+                          name:
+                            description: The name of the ingredient
+                            type: string
+                          description:
+                            description: A description of the ingredient
+                            type: string
+                          quantity:
+                            description: The quantity of the ingredient
+                            type: integer
+                          photo:
+                            description: The photo of the ingredient
+                            type: string
+                          productLink:
+                            description: The product link for more details
+                            type: string
+                          price:
+                            description: The price of the ingredient
+                            type: number
+                            format: double
+                          createdAt:
+                            description: The creation date of the ingredient
+                            type: string
+                            format: date-time
+                          updatedAt:
+                            description: The last update date of the ingredient
+                            type: string
+                            format: date-time
+                    categories:
+                      description: The categories of the product
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            description: The auto-generated id of the category
+                            type: integer
+                          name:
+                            type: string
+                            description: The name of the category
+                          description:
+                            type: string
+                            description: A description of the category
+                    optionGroups:
+                      description: The option groups of the product
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            description: The auto-generated id of the option group
+                            type: integer
+                          sectionName:
+                            description: The name of the section the option group belongs to
+                            type: string
+                          options:
+                            description: The options of the option group
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  description: The auto-generated id of the option
+                                  type: integer
+                                priceAdjustment:
+                                  description: The amount by which the price is adjusted
+                                  type: number
+                                  format: double
+                                multipleChoice:
+                                  description: Whether the option is multiple choice
+                                  type: boolean
+                                minQuantity:
+                                  description: The minimum quantity of the option
+                                  type: integer
+                                maxQuantity:
+                                  description: The maximum quantity of the option
+                                  type: integer
+                                ingredient:
+                                  description: The ingredient of the option
+                                  type: object
+                                  properties:
+                                    id:
+                                      description: The auto-generated id of the ingredient
+                                      type: integer
+                                    name:
+                                      description: The name of the ingredient
+                                      type: string
+                                    description:
+                                      description: A description of the ingredient
+                                      type: string
+                                    price:
+                                      description: The price of the ingredient
+                                      type: number
+                                      format: double
+                                    photo:
+                                      description: The photo of the ingredient
+                                      type: string
+                    discounts:
+                      description: The discounts applicable to the product
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            description: The auto-generated id of the discount
+                            type: integer
+                          name:
+                            description: The name of the discount
+                            type: string
+                          description:
+                            description: The description of the discount
+                            type: string
+                          priceAdjustment:
+                            description: The amount by which the price is adjusted
+                            type: number
+                            format: double
+            example:
+              status: "success"
+              data:
+                id: 1
+                name: "Cheeseburger"
+                description: "A delicious cheeseburger"
+                photo: "cheeseburger.jpg"
+                price: 5.99
+                createdAt: "2021-07-01T00:00:00.000Z"
+                updatedAt: "2021-07-01T00:00:00.000Z"
+                ingredients:
+                  - id: 1
+                    name: "Beef Patty"
+                    description: "A juicy beef patty"
+                    quantity: 1
+                    measurement: "piece"
+                    price: 2.99
+                    photo: "beef_patty.jpg"
+                categories:
+                  - id: 1
+                    name: "Burgers"
+                    description: "Delicious burgers"
+                optionGroups: 
+                  - id: 1
+                    sectionName: "Toppings"
+                    options:
+                      - id: 1
+                        priceAdjustment: 0.50
+                        multipleChoice: true
+                        minQuantity: 0
+                        maxQuantity: 5
+                        ingredient:
+                          id: 1
+                          name: "Lettuce"
+                          description: "Fresh lettuce"
+                          price: 0.50
+                          photo: "lettuce.jpg"
+      
+      400: 
+        description: Invalid ID supplied
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  value: "failure"
+                message:
+                  type: string
+                  value: "Invalid ID supplied"
+            example:
+              status: "failure"
+              message: "Invalid ID supplied"
+      
+      404:
+        description: Product not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  value: "failure"
+                message:
+                  type: string
+                  value: "Product not found"
+            example:
+              status: "failure"
+              message: "Product not found"
+
+      500:
+        description: Error within the server
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  value: "failure"
+                message:
+                  type: string
+                  value: "Failed to retrieve menu items"
+            example:
+              status: "failure"
+              message: "Failed to retrieve menu items"
+
+/api/v1/products/create:
+  post:
+    summary: Create a new product
+    tags: [Products]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                description: The name of the product
+                type: string
+                required: true
+                example: "Pizza"
+              description:
+                description: The description of the product
+                type: string
+                required: true
+                example: "A delicious pizza"
+              price:
+                description: The price of the product
+                type: number
+                format: float
+                required: true
+                example: 9.99
+              photo:
+                description: The photo of the product in Base64 format
+                type: string
+                example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/..."
+              ingredients:
+                description: The ingredients of the product
+                required: false
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      description: The auto-generated id of the ingredient
+                      type: integer
+                      minimum: 1
+                      required: true
+                      example: 1
+                    quantity:
+                      description: The quantity of the ingredient
+                      type: integer
+                      minimum: 0
+                      required: true
+                      example: 1
+                    measurement:
+                      description: The measurement of the ingredient
+                      type: string
+                      required: true
+                      example: "piece"
+              categories:
+                description: The categories of the product
+                required: false
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      description: The auto-generated id of the category
+                      type: integer
+                      minimum: 1
+                      required: true
+                      example: 1
+              optionGroups:
+                description: The options of the product
+                required: false
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      description: The auto-generated id of the option group
+                      type: integer
+                      minimum: 1
+                      required: true
+                      example: 1
+                    options:
+                      description: The options of the option group
+                      required: true
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          priceAdjustment:
+                            description: The amount by which the price is adjusted
+                            type: number
+                            format: double
+                            required: true
+                            example: 0.50
+                          multipleChoice:
+                            description: Whether the option is multiple choice
+                            type: boolean
+                            required: true
+                            example: true
+                          minQuantity:
+                            description: The minimum quantity of the option
+                            type: integer
+                            required: true
+                            example: 0
+                          maxQuantity:
+                            description: The maximum quantity of the option
+                            type: integer
+                            required: true
+                            example: 5
+                          ingredientId:
+                            description: The auto-generated id of the ingredient
+                            type: integer
+                            required: true
+                            example: 1
+              discounts:
+      example:
+        name: "Cheeseburger"
+        description: "A delicious cheeseburger"
+        price: 5.99
+        photo: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/..."
+        ingredients:
+          - id: 1
+            quantity: 1
+            measurement: "piece"
+        categories:
+          - id: 1
+        optionGroups:
+          - id: 1
+            options:
+              - priceAdjustment: 0.50
+                multipleChoice: true
+                minQuantity: 0
+                maxQuantity: 5
+                ingredientId: 1
+    responses:
+      201:
+        description: Product created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "success"
+                data:
+                  type: object
+                  properties:
+                    id:
+                      description: The auto-generated id of the product
+                      type: integer
+                    name:
+                      description: The name of the product
+                      type: string
+                      example: "Pizza"
+                    description:
+                      description: The description of the product
+                      type: string
+                      example: "A delicious pizza"
+                    photo:
+                      description: The photo of the product
+                      type: string
+                      example: "pizza.jpg"
+                    price:
+                      description: The price of the product
+                      type: number
+                      format: float
+                      example: 9.99
+            example:
+              status: "success"
+              data:
+                id: 1
+                name: "Cheeseburger"
+                description: "A delicious cheeseburger"
+                photo: "cheeseburger.jpg"
+                price: 5.99
+      400:
+        description: Invalid input
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Name must be a string"
+      404:
+        description: Item not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Ingredient not found"
+      500:
+        description: Error within the server
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Failed to create product"
+
+/api/v1/products/update/{id}:
+  put:
+    summary: Update a product
+    tags: [Products]
+    parameters:
+      - name: id
+        in: path
+        description: ID of the product to update
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                description: The auto-generated id of the product
+                type: integer
+                required: true
+                example: 1
+              name:
+                description: The name of the product
+                type: string
+                example: "Pizza"
+              description:
+                description: The description of the product
+                type: string
+                example: "A delicious pizza"
+              price:
+                description: The price of the product
+                type: number
+                format: float
+                example: 9.99
+              photo:
+                description: The photo of the product in Base64 format
+                type: string
+                example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/..."
+              ingredients:
+                description: The ingredients of the product to add, update, or delete
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      description: The auto-generated id of the ingredient
+                      type: integer
+                      minimum: 1
+                      required: true
+                      example: 1
+                    quantity:
+                      description: The quantity of the ingredient
+                      type: integer
+                      minimum: 0
+                      required: true
+                      example: 1
+                    measurement:
+                      description: The measurement of the ingredient
+                      type: string
+                      required: true
+                      example: "piece"
+                    remove:
+                      description: Whether to remove the ingredient
+                      type: boolean
+                      required: false
+                      example: false
+              categories:
+                description: The categories of the product
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      description: The auto-generated id of the category
+                      type: integer
+                      minimum: 1
+                      required: true
+                      example: 1
+                    remove:
+                      description: Whether to remove the category
+                      type: boolean
+                      example: false
+                    add:
+                      description: Whether to add the category
+                      type: boolean
+                      example: false
+              options:
+                description: The options of the product
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      description: The auto-generated id of the option group
+                      type: integer
+                      minimum: 1
+                      required: true
+                      example: 1
+                    remove:
+                      description: Whether to remove the option group
+                      type: boolean
+                      required: false
+                      example: false
+                    items:
+                      description: The options of the optionGroup
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            description: The auto-generated id of the option
+                            type: integer
+                            required: true
+                            example: 1
+                          priceAdjustment:
+                            description: The amount by which the price is adjusted
+                            type: number
+                            format: double
+                            required: true
+                            example: 0.50
+                          multipleChoice:
+                            description: Whether the option is multiple choice
+                            type: boolean
+                            required: true
+                            example: true
+                          minQuantity:
+                            description: The minimum quantity of the option
+                            type: integer
+                            required: true
+                            example: 0
+                          maxQuantity:
+                            description: The maximum quantity of the option
+                            type: integer
+                            required: true
+                            example: 5
+                          ingredientId:
+                            description: The auto-generated id of the ingredient
+                            type: integer
+                            required: true
+                            example: 1
+                          remove:
+                            description: Whether to remove the option
+                            type: boolean
+                            required: false
+                            example: false
+          example:
+            id: 1
+            name: "Cheeseburger"
+            description: "A delicious cheeseburger"
+            price: 5.99
+            photo: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/..."
+            ingredients:
+              - id: 1
+                quantity: 1
+                measurement: "piece"
+                remove: false
+            categories:
+              - id: 1
+                remove: false
+                add: false
+            options:
+              - id: 1
+                remove: false
+                items:
+                  - id: 1
+                    priceAdjustment: 0.50
+                    multipleChoice: true
+                    minQuantity: 0
+                    maxQuantity: 5
+                    ingredientId: 1
+                    remove: false
+    responses:
+      200:
+        description: Product updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "success"
+                data:
+                  type: object
+                  properties:
+                    message:
+                      description: The success message returned upon product update
+                      type: string
+                      example: "Product updated successfully"
+              example:
+                status: "success"
+                data:
+                  message: "Product updated successfully"
+      400:
+        description: Invalid input
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+              example:
+                status: "failure"
+                message: "Name must be a string"
+      404:
+        description: Item not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+              example:
+                status: "failure"
+                message: "Product not found"
+      500:
+        description: Error within the server
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+              example:
+                status: "failure"
+                message: "Failed to update product"
+
+/api/v1/products/delete/{id}:
+  delete:
+    summary: Delete a product
+    tags: [Products]
+    parameters:
+      - name: id
+        in: path
+        description: ID of the product to delete
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                description: The auto-generated id of the product
+                type: integer
+                required: true
+                example: 1
+          example:
+            id: 1
+    responses:
+      200:
+        description: Product deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "success"
+                data:
+                  type: object
+                  properties:
+                    message:
+                      description: The success message returned upon product deletion
+                      type: string
+                      example: "Product deleted successfully"
+              example:
+                status: "success"
+                data:
+                  message: "Product deleted successfully"
+      400:
+        description: Invalid input
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+              example:
+                status: "failure"
+                message: "Invalid ID supplied"
+      404:
+        description: Product not found error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+                  value: "Product not found"
+              example:
+                status: "failure"
+                message: "Product not found"
+      500:
+        description: Error within the server
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+              example:
+                status: "failure"
+                message: "Failed to delete product"
+
+
+
