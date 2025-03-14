@@ -567,17 +567,12 @@
                 items:
                   type: object
                   properties:
-                    id:
-                      description: The auto-generated id of the option group
-                      type: integer
-                      minimum: 1
-                      example: 1
                     sectionName:
                       description: The name of the section the option group belongs to
-                      type: string
                       required: true
+                      type: string
                       example: "buns"
-                    options:
+                    items:
                       description: The options of the option group
                       required: true
                       type: array
@@ -621,9 +616,9 @@
             measurement: "piece"
         categories:
           - id: 1
-        optionGroups:
-          - id: 1
-            options:
+        options:
+          - sectionName: "Toppings"
+            items:
               - priceAdjustment: 0.50
                 multipleChoice: true
                 minQuantity: 0
