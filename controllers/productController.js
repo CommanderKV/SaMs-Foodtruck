@@ -377,6 +377,102 @@ async function createProduct(req, res) {
             );
         }
 
+        ////////////////////////////
+        //  Check for categories  //
+        ////////////////////////////
+        if (newProductDetails.categories != undefined && Array.isArray(newProductDetails.categories)) {
+            const categories = newProductDetails.categories;
+            for (const category of categories) {
+                if (typeof category !== "number") {
+                    throw {code: 400, message: "Category ID must be a number"};
+                }
+                if (category <= 0) {
+                    throw {code: 400, message: "Invalid category ID"};
+                }
+
+                // Check to see if the category exists
+                const foundCategory = await db.categories.findOne({ where: { id: category } });
+                if (!foundCategory) {
+                    throw {code: 404, message: `Category with ${category} id not found`};
+                }
+
+                // Add the category to the product
+                await newProduct.addCategory(category);
+            }
+        }
+
+        ///////////////////////
+        // Check for options //
+        ///////////////////////
+        if (newProductDetails.options != undefined && Array.isArray(newProductDetails.options)) {
+            const options = newProductDetails.options;
+            for (const group of options) {
+                // Check the sectionName
+                if (group.sectionName === undefined || typeof group.sectionName !== "string" || group.sectionName.trim() === "") {
+                    throw {code: 400, message: "OptionGroup sectionName is required"};
+                }
+                
+                // Create the option group
+                const newOptionGroup = await newProduct.createOptionGroup({
+                    sectionName: group.sectionName
+                });
+
+                // Check the options
+                if (group.items === undefined || !Array.isArray(group.items)) {
+                    newOptionGroup.destroy();
+                    throw {code: 400, message: "OptionGroup items must be an array"};
+                }
+
+                // Loop through the items and creating the options
+                for (const item of group.items) {
+                    // Check the price adjustment
+                    if (item.priceAdjustment === undefined || typeof item.priceAdjustment !== "number") {
+                        newOptionGroup.destroy();
+                        throw {code: 400, message: "Option priceAdjustment is required"};
+                    }
+
+                    // Check the multiple choice
+                    if (item.multipleChoice !== undefined && typeof item.multipleChoice !== "boolean") {
+                        newOptionGroup.destroy();
+                        throw {code: 400, message: "Option multipleChoice must be a boolean"};
+                    }
+
+                    // Check the minQuantity
+                    if (item.minQuantity !== undefined && (typeof item.minQuantity !== "number" || item.minQuantity < 0)) {
+                        newOptionGroup.destroy();
+                        throw {code: 400, message: "Option minQuantity must be >= 0"};
+                    }
+
+                    // Check the maxQuantity
+                    if (item.maxQuantity !== undefined && (typeof item.maxQuantity !== "number" || item.maxQuantity < 1)) {
+                        newOptionGroup.destroy();
+                        throw {code: 400, message: "Option maxQuantity must be >= 1"};
+                    }
+
+                    // Check the ingredient ID
+                    if (item.ingredientId === undefined || typeof item.ingredientId !== "number" || item.ingredientId <= 0) {
+                        newOptionGroup.destroy();
+                        throw {code: 400, message: "Option ingredientId is required"};
+                    }
+
+                    const ingredient = await db.ingredients.findByPk(item.ingredientId);
+                    if (!ingredient) {
+                        newOptionGroup.destroy();
+                        throw {code: 404, message: "Ingredient not found"};
+                    }
+
+                    // Create the option
+                    await newOptionGroup.createOption({
+                        priceAdjustment: item.priceAdjustment,
+                        multipleChoice: item.multipleChoice,
+                        minQuantity: item.minQuantity,
+                        maxQuantity: item.maxQuantity,
+                        ingredientId: item.ingredientId
+                    });
+                }
+            }
+        }
+
         // Send response
         res.status(201).json({
             status: "success",
