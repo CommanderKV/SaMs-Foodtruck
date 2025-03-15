@@ -222,17 +222,8 @@
 
 /api/v1/products/{id}:
   get:
-    summary: Get all products
+    summary: Get a product by ID
     tags: [Products]
-    parameters:
-      - name: id
-        in: path
-        description: ID of the product to return
-        required: true
-        schema:
-          type: integer
-          minimum: 1
-        example: 1
     responses:
       200:
         description: Returns the product
@@ -507,123 +498,23 @@
                 description: The name of the product
                 type: string
                 required: true
-                example: "Pizza"
               description:
                 description: The description of the product
                 type: string
                 required: true
-                example: "A delicious pizza"
               price:
                 description: The price of the product
                 type: number
                 format: float
                 required: true
-                example: 9.99
               photo:
                 description: The photo of the product in Base64 format
                 type: string
-                example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/..."
-              ingredients:
-                description: The ingredients of the product
-                required: false
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      description: The auto-generated id of the ingredient
-                      type: integer
-                      minimum: 1
-                      required: true
-                      example: 1
-                    quantity:
-                      description: The quantity of the ingredient
-                      type: integer
-                      minimum: 0
-                      required: true
-                      example: 1
-                    measurement:
-                      description: The measurement of the ingredient
-                      type: string
-                      required: true
-                      example: "piece"
-              categories:
-                description: The categories of the product
-                required: false
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      description: The auto-generated id of the category
-                      type: integer
-                      minimum: 1
-                      required: true
-                      example: 1
-              options:
-                description: The options of the product
-                required: false
-                type: array
-                items:
-                  type: object
-                  properties:
-                    sectionName:
-                      description: The name of the section the option group belongs to
-                      required: true
-                      type: string
-                      example: "buns"
-                    items:
-                      description: The options of the option group
-                      required: true
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          priceAdjustment:
-                            description: The amount by which the price is adjusted
-                            type: number
-                            format: double
-                            required: true
-                            example: 0.50
-                          multipleChoice:
-                            description: Whether the option is multiple choice
-                            type: boolean
-                            required: true
-                            example: true
-                          minQuantity:
-                            description: The minimum quantity of the option
-                            type: integer
-                            required: true
-                            example: 0
-                          maxQuantity:
-                            description: The maximum quantity of the option
-                            type: integer
-                            required: true
-                            example: 5
-                          ingredientId:
-                            description: The auto-generated id of the ingredient
-                            type: integer
-                            required: true
-                            example: 1
-      example:
-        name: "Cheeseburger"
-        description: "A delicious cheeseburger"
-        price: 5.99
-        photo: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/..."
-        ingredients:
-          - id: 1
-            quantity: 1
-            measurement: "piece"
-        categories:
-          - id: 1
-        options:
-          - sectionName: "Toppings"
-            items:
-              - priceAdjustment: 0.50
-                multipleChoice: true
-                minQuantity: 0
-                maxQuantity: 5
-                ingredientId: 1
+          example:
+            name: "Cheeseburger"
+            description: "A delicious cheeseburger"
+            price: 5.99
+            photo: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/..."
     responses:
       201:
         description: Product created successfully
@@ -761,139 +652,12 @@
                 description: The photo of the product in Base64 format
                 type: string
                 example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/..."
-              ingredients:
-                description: The ingredients of the product to add, update, or delete
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      description: The auto-generated id of the ingredient
-                      type: integer
-                      minimum: 1
-                      required: true
-                      example: 1
-                    quantity:
-                      description: The quantity of the ingredient
-                      type: integer
-                      minimum: 0
-                      required: true
-                      example: 1
-                    measurement:
-                      description: The measurement of the ingredient
-                      type: string
-                      required: true
-                      example: "piece"
-                    remove:
-                      description: Whether to remove the ingredient
-                      type: boolean
-                      required: false
-                      example: false
-              categories:
-                description: The categories of the product
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      description: The auto-generated id of the category
-                      type: integer
-                      minimum: 1
-                      required: true
-                      example: 1
-                    remove:
-                      description: Whether to remove the category
-                      type: boolean
-                      example: false
-                    add:
-                      description: Whether to add the category
-                      type: boolean
-                      example: false
-              options:
-                description: The options of the product
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      description: The auto-generated id of the option group
-                      type: integer
-                      minimum: 1
-                      required: true
-                      example: 1
-                    remove:
-                      description: Whether to remove the option group
-                      type: boolean
-                      required: false
-                      example: false
-                    items:
-                      description: The options of the optionGroup
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          id:
-                            description: The auto-generated id of the option
-                            type: integer
-                            required: true
-                            example: 1
-                          priceAdjustment:
-                            description: The amount by which the price is adjusted
-                            type: number
-                            format: double
-                            required: true
-                            example: 0.50
-                          multipleChoice:
-                            description: Whether the option is multiple choice
-                            type: boolean
-                            required: true
-                            example: true
-                          minQuantity:
-                            description: The minimum quantity of the option
-                            type: integer
-                            required: true
-                            example: 0
-                          maxQuantity:
-                            description: The maximum quantity of the option
-                            type: integer
-                            required: true
-                            example: 5
-                          ingredientId:
-                            description: The auto-generated id of the ingredient
-                            type: integer
-                            required: true
-                            example: 1
-                          remove:
-                            description: Whether to remove the option
-                            type: boolean
-                            required: false
-                            example: false
           example:
             id: 1
             name: "Cheeseburger"
             description: "A delicious cheeseburger"
             price: 5.99
             photo: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/..."
-            ingredients:
-              - id: 1
-                quantity: 1
-                measurement: "piece"
-                remove: false
-            categories:
-              - id: 1
-                remove: false
-                add: false
-            options:
-              - id: 1
-                remove: false
-                items:
-                  - id: 1
-                    priceAdjustment: 0.50
-                    multipleChoice: true
-                    minQuantity: 0
-                    maxQuantity: 5
-                    ingredientId: 1
-                    remove: false
     responses:
       200:
         description: Product updated successfully
@@ -907,12 +671,13 @@
                   type: string
                   value: "success"
                 data:
+                  description: The data returned upon product update
                   type: object
                   properties:
                     message:
                       description: The success message returned upon product update
                       type: string
-                      example: "Product updated successfully"
+                      value: "Product updated successfully"
               example:
                 status: "success"
                 data:
@@ -982,20 +747,6 @@
           type: integer
           minimum: 1
         example: 1
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              id:
-                description: The auto-generated id of the product
-                type: integer
-                required: true
-                example: 1
-          example:
-            id: 1
     responses:
       200:
         description: Product deleted successfully
@@ -1009,6 +760,7 @@
                   type: string
                   value: "success"
                 data:
+                  description: The data returned upon product deletion
                   type: object
                   properties:
                     message:
