@@ -1,5 +1,9 @@
 import db from '../models/index.js';
 
+/////////////////////////////
+//    Utility functions    //
+/////////////////////////////
+
 // Handle creating errors
 function sendError(res, error, message) {
     if (error instanceof Error == false) {
@@ -16,13 +20,89 @@ function sendError(res, error, message) {
     }
 }
 
+async function checkCategoryId(id) {
+    // Check to make sure the id is not null
+    if (id === undefined) {
+        throw { code: 400, message: "Category ID required" };
+    }
+
+    // Check to make sure the id is a number
+    if (isNaN(id)) {
+        throw { code: 400, message: "Category ID must be a number" };
+    } else if (id <= 0) {
+        throw { code: 400, message: "Category ID must be greater than 0" };
+    }
+
+    // Check to make sure the category exists
+    const category = await db.categories.findByPk(id);
+    if (category === null) {
+        throw { code: 404, message: "Category not found" };
+    }
+
+    return category;
+}
+
+function checkCategoryDetails(details, optional=false) {
+    // The details to return
+    var categoryDetails = {};
+
+    // Check the name
+    if (details.name !== undefined) {
+        // Make sure the name is a string
+        if (typeof details.name !== "string") {
+            throw { code: 400, message: "Name must be a string" };
+        }
+        // Check if the name is empty
+        if (details.name === "") {
+            throw { code: 400, message: "Name required" };
+        }
+        categoryDetails.name = details.name;
+    } else if (!optional) {
+        throw { code: 400, message: "Name required" };
+    }
+
+    // Check the description
+    if (details.description !== undefined) {
+        // Make sure the description is a string
+        if (typeof details.description !== "string") {
+            throw { code: 400, message: "Description must be a string" };
+        }
+        categoryDetails.description = details.description;
+    }
+
+    // Check if the details are optional
+    if (optional) {
+        if (Object.keys(categoryDetails).length === 0) {
+            throw { code: 400, message: "No fields to update" };
+        }
+    }
+
+    // Return the details
+    return categoryDetails;
+}
+
+////////////////////
+//    Requests    //
+////////////////////
+
 // GET: /
 async function getCategories(req, res) {
+    /**
+     * Body: null
+     */
     try {
+        // No input to check 
+        /////////////////////
+        //  Perform logic  //
+        /////////////////////
+
         // Get all categories
         const categories = await db.categories.findAll();
 
-        // Return the categories
+
+        //////////////////////
+        //  Send a response //
+        //////////////////////
         res.status(200).json({
             status: "success",
             data: categories
@@ -36,29 +116,20 @@ async function getCategories(req, res) {
 
 // GET: /:id
 async function getCategoryById(req, res) {
+    /**
+     * Body: null
+     */
     try {
-        // Get the category ID
-        const id = req.params.id;
-        
-        // Check the ID
-        if (id !== undefined) {
-            if (isNaN(id)) {
-                throw { code: 400, message: "Invalid category ID" };
-            }
-            if (id < 0) {
-                throw { code: 400, message: "Invalid category ID" };
-            }
-        } else {
-            throw { code: 400, message: "Category ID Required" };
-        }
+        ///////////////////////////
+        //  Run checks on input  //
+        ///////////////////////////
+        const category = await checkCategoryId(req.params.id);
 
-        // Ge the category
-        const category = await db.categories.findByPk(id);
-        if (category === null) {
-            throw { code: 404, message: "Category not found" };
-        }
 
-        // Return the category
+        // No logic to perform
+        ///////////////////////
+        //  Send a response  //
+        ///////////////////////
         res.status(200).json({
             status: "success",
             data: category
@@ -70,33 +141,32 @@ async function getCategoryById(req, res) {
     }
 }
 
-// Check to make sure all required fields are present
-function checkCategoryParams(category) {
-    if (category.name === undefined || typeof category.name !== "string") {
-        throw { code: 400, message: "Name required" };
-    }
-
-    if (category.description !== undefined && typeof category.description !== "string") {
-        throw { code: 400, message: "Description must be a string" };
-    }
-}
-
 // POST: /create
 async function createCategory(req, res) {
+    /**
+     * Body: {
+     *    name: string,
+     *    description: string
+     * }
+     */
     try {
-        // Get the category data
-        const categoryParams = req.body;
+        ///////////////////////////
+        //  Run checks on input  //
+        ///////////////////////////
+        const categoryDetails = checkCategoryDetails(req.body);
 
-        // Check the category data
-        checkCategoryParams(categoryParams);
+
+        /////////////////////
+        //  Perform logic  //
+        /////////////////////
 
         // Create the category
-        const category = await db.categories.create({
-            name: categoryParams.name,
-            description: categoryParams.description
-        });
+        const category = await db.categories.create(categoryDetails);
 
-        // Return the category
+
+        ///////////////////////
+        //  Send a response  //
+        ///////////////////////
         res.status(201).json({
             status: "success",
             data: category
@@ -106,114 +176,70 @@ async function createCategory(req, res) {
     }
 }
 
-function checkUpdateCategoryDetails(categoryDetails) {
-    if (categoryDetails.name !== undefined) {
-        if (typeof categoryDetails.name !== "string") {
-            throw { code: 400, message: "Name must be a string" };
-        }
-    }
-
-    if (categoryDetails.description !== undefined) {
-        if (typeof categoryDetails.description !== "string") {
-            throw { code: 400, message: "Description must be a string" };
-        }
-    }
-}
-
 // PUT: /update/:id
 async function updateCategory(req, res) {
+    /**
+     * Body: {
+     *     name: string,
+     *     description: string
+     * }
+     */
     try {
-        // Get possible fields to update
-        const categoryDetails = req.body;
-        const id = req.params.id != undefined ? Number(req.params.id) : req.params.id;
+        ///////////////////////////
+        //  Run checks on input  //
+        ///////////////////////////
+        const category = await checkCategoryId(req.params.id);
+        const categoryDetails = checkCategoryDetails(req.body, true);
 
-        // Check the values
-        checkUpdateCategoryDetails(categoryDetails);
 
-        if (id !== undefined && categoryDetails.id !== undefined) {
-            if (isNaN(id) || id < 0 || isNaN(categoryDetails.id) || categoryDetails.id < 0) {
-                throw { code: 400, message: "Invalid category ID" };
-            }
-            if (id !== categoryDetails.id) {
-                throw { code: 400, message: "Category ID mismatch" };
-            }
-        } else {
-            throw { code: 400, message: "Category ID required" };
-        }
+        /////////////////////
+        //  Perform logic  //
+        /////////////////////
+        await category.update(categoryDetails);
 
-        let category = await db.categories.findByPk(id);
-        if (!category) {
-            throw { code: 404, message: "Category not found" };
-        }
 
-        // Update the category
-        let updatedCategory = {};
-        for (const key in categoryDetails) {
-            if (categoryDetails[key] != undefined && key != "id") {
-                updatedCategory[key] = categoryDetails[key];
-            }
-        }
-
-        // Update the category
-        if (Object.keys(updatedCategory).length !== 0) {
-            await db.categories.update(
-                updatedCategory,
-                { 
-                    where: { 
-                        id: id 
-                    } 
-                }
-            )
-        }
-
-        // Return that we updated the category
+        ///////////////////////
+        //  Send a response  //
+        ///////////////////////
         res.status(200).json({
             status: "success",
-            data: "Category updated"
+            data: {
+                message: "Category updated"
+            }
         });
-
     } catch (error) {
         sendError(res, error, "Failed to update category");
     }
 }
 
-// DELETE: /delete
+// DELETE: /delete/:id
 async function deleteCategory(req, res) {
+    /**
+     * Body: null
+     */
     try {
-        // Get the category ID
-        const id = req.body.id;
-        const id2 = req.params.id != undefined ? Number(req.params.id) : req.params.id;
+        ///////////////////////////
+        //  Run checks on input  //
+        ///////////////////////////
+        const category = await checkCategoryId(req.params.id);
 
-        // Check the category ID
-        if (id !== undefined && id2 !== undefined) {
-            if (isNaN(id) || isNaN(id2)) {
-                throw { code: 400, message: "Invalid category ID" };
-            }
-            if (id < 0 || id2 < 0) {
-                throw { code: 400, message: "Invalid category ID" };
-            }
-            if (id !== id2) {
-                throw { code: 400, message: "Category ID mismatch" };
-            }
-        } else {
-            throw { code: 400, message: "Category ID required" };
-        }
 
-        // Get the category
-        const category = await db.categories.findByPk(id);
-
-        // Check if the category exists
-        if (category === null) {
-            throw { code: 404, message: "Category not found" };
-        }
+        /////////////////////
+        //  Perform logic  //
+        /////////////////////
 
         // Delete the category
         await category.destroy();
 
-        // Return the category
+
+        ///////////////////////
+        //  Send a response  //
+        ///////////////////////
         res.status(200).json({
             status: "success",
-            data: "Category deleted"
+            data: {
+                message: "Category deleted"
+            }
         });
     } catch (error) {
         sendError(res, error, "Failed to delete category");
