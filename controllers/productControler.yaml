@@ -224,6 +224,15 @@
   get:
     summary: Get a product by ID
     tags: [Products]
+    parameters:
+      - name: id
+        in: path
+        description: ID of the product to get
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
     responses:
       200:
         description: Returns the product
@@ -767,10 +776,10 @@
                       description: The success message returned upon product deletion
                       type: string
                       example: "Product deleted successfully"
-              example:
-                status: "success"
-                data:
-                  message: "Product deleted successfully"
+            example:
+              status: "success"
+              data:
+                message: "Product deleted successfully"
       400:
         description: Invalid input
         content:
@@ -823,6 +832,805 @@
               example:
                 status: "failure"
                 message: "Failed to delete product"
+
+
+
+/api/v1/products/{id}/categories:
+  post:
+    summary: Add a category to a product
+    tags: [Products, Categories]
+    parameters:
+      - name: id
+        in: path
+        description: ID of the product to add a category to
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                description: The ID of the category to add
+                type: integer
+                required: true
+          example:
+            id: 1
+    responses:
+      200:
+        description: Category added to product successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "success"
+                data:
+                  description: The data returned upon category addition
+                  type: object
+                  properties:
+                    message:
+                      description: The success message returned upon category addition
+                      type: string
+                      value: "Category added successfully"
+            example:
+              status: "success"
+              data:
+                message: "Category added successfully"
+      400:
+        description: Invalid input
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid ID supplied"
+      404:
+        description: Product or category not found error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+                  value: "Product or category not found"
+            example:
+              status: "failure"
+              message: "Product not found"
+      409:
+        description: Category already added to product
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+                  value: "Category already linked to product"
+            example:
+              status: "failure"
+              message: "Category already linked to product"
+      500:
+        description: Error within the server
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Failed to add category to product"
+
+  delete:
+    summary: Remove a category from a product
+    tags: [Products]
+    parameters:
+      - name: id
+        in: path
+        description: ID of the product to remove a category from
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                description: The ID of the category to remove
+                type: integer
+                required: true
+          example:
+            id: 1
+    responses:
+      200:
+        description: Category removed from product successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "success"
+                data:
+                  description: The data returned upon category removal
+                  type: object
+                  properties:
+                    message:
+                      description: The success message returned upon category removal
+                      type: string
+                      value: "Category removed successfully"
+            example:
+              status: "success"
+              data:
+                message: "Category removed successfully"
+      400:
+        description: Invalid input
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid ID supplied"
+      404:
+        description: Product or category not found error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+                  value: "Product or category not found"
+            example:
+              status: "failure"
+              message: "Product not found"
+      500:
+        description: Error within the server
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Failed to remove category from product"
+
+
+/api/v1/products/{id}/optionGroups:
+  post:
+    summary: Add an option group to a product
+    tags: [Products]
+    parameters:
+      - name: id
+        in: path
+        description: ID of the product to add an option group to
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                description: The ID of the option group to add
+                type: integer
+                required: true
+          example:
+            id: 1
+    responses:
+      200:
+        description: Option group added to product successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "success"
+                data:
+                  description: The data returned upon option group addition
+                  type: object
+                  properties:
+                    message:
+                      description: The success message returned upon option group addition
+                      type: string
+                      value: "Option group added successfully"
+            example:
+              status: "success"
+              data:
+                message: "Option group added successfully"
+      400:
+        description: Invalid input
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid ID supplied"
+      404:
+        description: Product or option group not found error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+                  value: "Product or option group not found"
+            example:
+              status: "failure"
+              message: "Product not found"
+      409:
+        description: Option group already added to product
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+                  value: "Option group already linked to product"
+            example:
+              status: "failure"
+              message: "Option group already linked to product"
+      500:
+        description: Error within the server
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Failed to add option group to product"
+
+  delete:
+    summary: Remove an option group from a product
+    tags: [Products]
+    parameters:
+      - name: id
+        in: path
+        description: ID of the product to remove an option group from
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                description: The ID of the option group to remove
+                type: integer
+                required: true
+          example:
+            id: 1
+    responses:
+      200:
+        description: Option group removed from product successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "success"
+                data:
+                  description: The data returned upon option group removal
+                  type: object
+                  properties:
+                    message:
+                      description: The success message returned upon option group removal
+                      type: string
+                      value: "Option group removed successfully"
+            example:
+              status: "success"
+              data:
+                message: "Option group removed successfully"
+      400:
+        description: Invalid input
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid ID supplied"
+      404:
+        description: Product or option group not found error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+                  value: "Product or option group not found"
+            example:
+              status: "failure"
+              message: "Product not found"
+      500:
+        description: Error within the server
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Failed to remove option group from product"
+
+
+/api/v1/products/{id}/ingredients:
+  post:
+    summary: Add an ingredient to a product
+    tags: [Products]
+    parameters:
+      - name: id
+        in: path
+        description: ID of the product to add an ingredient to
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                description: The ID of the ingredient to add
+                type: integer
+                required: true
+              quantity:
+                description: The quantity of the ingredient to add
+                type: integer
+                required: true
+              measurement:
+                description: The measurement of the ingredient to add
+                type: string
+                required: true
+          example:
+            id: 1
+            quantity: 1
+            measurement: "piece"
+    responses:
+      200:
+        description: Ingredient added to product successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "success"
+                data:
+                  description: The data returned upon ingredient addition
+                  type: object
+                  properties:
+                    message:
+                      description: The success message returned upon ingredient addition
+                      type: string
+                      value: "Ingredient added successfully"
+            example:
+              status: "success"
+              data:
+                message: "Ingredient added successfully"
+      400:
+        description: Invalid input
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid ID supplied"
+      404:
+        description: Product or ingredient not found error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+                  value: "Product or ingredient not found"
+            example:
+              status: "failure"
+              message: "Product not found"
+      409:
+        description: Ingredient already added to product
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+                  value: "Ingredient already linked to product"
+            example:
+              status: "failure"
+              message: "Ingredient already linked to product"
+      500:
+        description: Error within the server
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Failed to add ingredient to product"
+  
+  put:
+    summary: Update an ingredient of a product
+    tags: [Products]
+    parameters:
+      - name: id
+        in: path
+        description: ID of the product to update an ingredient of
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                description: The ID of the ingredient to update
+                type: integer
+                required: true
+              quantity:
+                description: The quantity of the ingredient to update
+                type: integer
+              measurement:
+                description: The measurement of the ingredient to update
+                type: string
+          example:
+            id: 1
+            quantity: 2
+            measurement: "pieces"
+    responses:
+      200:
+        description: Ingredient updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "success"
+                data:
+                  description: The data returned upon ingredient update
+                  type: object
+                  properties:
+                    message:
+                      description: The success message returned upon ingredient update
+                      type: string
+                      value: "Ingredient updated successfully"
+            example:
+              status: "success"
+              data:
+                message: "Ingredient updated successfully"
+      400:
+        description: Invalid input
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid ID supplied"
+      404:
+        description: Product or ingredient not found error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+                  value: "Product or ingredient not found"
+            example:
+              status: "failure"
+              message: "Product not found"
+      500:
+        description: Error within the server
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Failed to update ingredient of product"
+
+  delete:
+    summary: Remove an ingredient from a product
+    tags: [Products]
+    parameters:
+      - name: id
+        in: path
+        description: ID of the product to remove an ingredient from
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                description: The ID of the ingredient to remove
+                type: integer
+                required: true
+          example:
+            id: 1
+    responses:
+      200:
+        description: Ingredient removed from product successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "success"
+                data:
+                  description: The data returned upon ingredient removal
+                  type: object
+                  properties:
+                    message:
+                      description: The success message returned upon ingredient removal
+                      type: string
+                      value: "Ingredient removed successfully"
+            example:
+              status: "success"
+              data:
+                message: "Ingredient removed successfully"
+      400:
+        description: Invalid input
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid ID supplied"
+      404:
+        description: Product or ingredient not found error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+                  value: "Product or ingredient not found"
+            example:
+              status: "failure"
+              message: "Product not found"
+      500:
+        description: Error within the server
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the request
+                  type: string
+                  value: "failure"
+                message:
+                  description: The error message
+                  type: string
+                  value: "Failed to remove ingredient"
+            example:
+              status: "failure"
+              message: "Failed to remove ingredient"
+
+
+
+
+
 
 
 
