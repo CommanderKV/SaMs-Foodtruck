@@ -132,19 +132,9 @@ const routes = [
                         function: categoryController.createCategory
                     },
                     {
-                        path: "/update",
-                        method: "PUT",
-                        function: categoryController.updateCategory
-                    },
-                    {
                         path: "/update/:id",
                         method: "PUT",
                         function: categoryController.updateCategory
-                    },
-                    {
-                        path: "/delete",
-                        method: "DELETE",
-                        function: categoryController.deleteCategory
                     },
                     {
                         path: "/delete/:id",
