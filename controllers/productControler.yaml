@@ -958,7 +958,7 @@
 
   delete:
     summary: Remove a category from a product
-    tags: [Products]
+    tags: [Products, Categories]
     parameters:
       - name: id
         in: path
@@ -1062,7 +1062,7 @@
 /api/v1/products/{id}/optionGroups:
   post:
     summary: Add an option group to a product
-    tags: [Products]
+    tags: [Products, Option groups]
     parameters:
       - name: id
         in: path
@@ -1182,7 +1182,7 @@
 
   delete:
     summary: Remove an option group from a product
-    tags: [Products]
+    tags: [Products, Option groups]
     parameters:
       - name: id
         in: path
@@ -1286,7 +1286,7 @@
 /api/v1/products/{id}/ingredients:
   post:
     summary: Add an ingredient to a product
-    tags: [Products]
+    tags: [Products, Ingredients]
     parameters:
       - name: id
         in: path
@@ -1416,7 +1416,7 @@
   
   put:
     summary: Update an ingredient of a product
-    tags: [Products]
+    tags: [Products, Ingredients]
     parameters:
       - name: id
         in: path
@@ -1526,7 +1526,7 @@
 
   delete:
     summary: Remove an ingredient from a product
-    tags: [Products]
+    tags: [Products, Ingredients]
     parameters:
       - name: id
         in: path
