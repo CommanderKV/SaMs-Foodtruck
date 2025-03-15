@@ -36,19 +36,9 @@ const routes = [
                         function: productController.createProduct
                     },
                     {
-                        path: "/update",
-                        method: "PUT",
-                        function: productController.updateProduct
-                    },
-                    {
                         path: "/update/:id",
                         method: "PUT",
                         function: productController.updateProduct
-                    },
-                    {
-                        path: "/delete",
-                        method: "DELETE",
-                        function: productController.deleteProduct
                     },
                     {
                         path: "/delete/:id",
@@ -112,19 +102,9 @@ const routes = [
                         function: ingredientController.createIngredient
                     },
                     {
-                        path: "/update",
-                        method: "PUT",
-                        function: ingredientController.updateIngredient
-                    },
-                    {
                         path: "/update/:id",
                         method: "PUT",
                         function: ingredientController.updateIngredient
-                    },
-                    {
-                        path: "/delete",
-                        method: "DELETE",
-                        function: ingredientController.deleteIngredient
                     },
                     {
                         path: "/delete/:id",
