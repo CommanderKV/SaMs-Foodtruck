@@ -1,6 +1,10 @@
 import db from '../models/index.js';
 import savePhoto from '../tools/photoSaver.js';
 
+/////////////////////////////
+//    Utility functions    //
+/////////////////////////////
+
 // Handle creating errors
 function sendError(res, error, message) {
     if (error instanceof Error == false) {
@@ -9,7 +13,7 @@ function sendError(res, error, message) {
             message: error.message
         });
     } else {
-        console.log(`${message} --ERROR-- ${error}`);
+        console.log(`${message} --ERROR-- ${error} -- STACK -- ${error.stack}`);
         return res.status(500).json({
             status: "failure",
             message: message
@@ -17,19 +21,161 @@ function sendError(res, error, message) {
     }
 }
 
+async function checkIngredientId(id) {
+    // Check to make sure the id is not null
+    if (id === undefined) {
+        throw { code: 400, message: "Ingredient ID required" };
+    }
+
+    // Check to make sure the id is a number
+    if (isNaN(id)) {
+        throw { code: 400, message: "Ingredient ID must be a number" };
+    } else if (id <= 0) {
+        throw { code: 400, message: "Ingredient ID must be greater than 0" };
+    }
+
+    // Check to make sure the ingredient exists
+    const ingredient = await db.ingredients.findByPk(id);
+    if (ingredient === null) {
+        throw { code: 404, message: "Ingredient not found" };
+    }
+
+    return ingredient;
+}
+
+function checkIngredientDetails(details, optional=false) {
+    // The details to return
+    var ingredientDetails = {};
+
+    // Check the name
+    if (details.name !== undefined) {
+        // Make sure the name is a string
+        if (typeof details.name !== "string") {
+            throw { code: 400, message: "Name must be a string" };
+        }
+        // Check if the name is empty
+        if (details.name === "") {
+            throw { code: 400, message: "Name required" };
+        }
+        ingredientDetails.name = details.name;
+    } else if (!optional) {
+        throw { code: 400, message: "Name required" };
+    }
+
+    // Check the description
+    if (details.description !== undefined) {
+        // Make sure the description is a string
+        if (typeof details.description !== "string") {
+            throw { code: 400, message: "Description must be a string" };
+        }
+        // Check if the description is empty
+        if (details.description === "") {
+            throw { code: 400, message: "Description required" };
+        }
+        ingredientDetails.description = details.description;
+    } else if (!optional) {
+        throw { code: 400, message: "Description required" };
+    }
+
+    // Check the quantity
+    if (details.quantity !== undefined) {
+        // Make sure the quantity is a number
+        if (typeof details.quantity !== "number") {
+            throw { code: 400, message: "Quantity must be a number" };
+        }
+        // Check if the quantity is less than 0
+        if (details.quantity < 0) {
+            throw { code: 400, message: "Quantity cannot be negative" };
+        }
+        ingredientDetails.quantity = details.quantity;
+    } else if (!optional) {
+        throw { code: 400, message: "Quantity required" };
+    }
+
+    // Check the photo
+    if (details.photo !== undefined) {
+        // Make sure the photo is a string
+        if (typeof details.photo !== "string") {
+            throw { code: 400, message: "Photo must be a string" };
+        }
+        // Check if the photo is empty
+        if (details.photo === "") {
+            throw { code: 400, message: "Photo required" };
+        }
+        ingredientDetails.photo = details.photo;
+    } else if (!optional) {
+        throw { code: 400, message: "Photo required" };
+    }
+
+    // Check the product link
+    if (details.productLink !== undefined) {
+        // Make sure the product link is a string
+        if (typeof details.productLink !== "string") {
+            throw { code: 400, message: "Product link must be a string" };
+        }
+        // Check if the product link is empty
+        if (details.productLink === "") {
+            throw { code: 400, message: "Product link required" };
+        }
+        ingredientDetails.productLink = details.productLink
+    } else if (!optional) {
+        throw { code: 400, message: "Product link required" };
+    }
+
+    // Check the price
+    if (details.price !== undefined) {
+        // Make sure the price is a number
+        if (typeof details.price !== "number") {
+            throw { code: 400, message: "Price must be a number" };
+        }
+        // Check if the price is less than 0
+        if (details.price < 0) {
+            throw { code: 400, message: "Price cannot be negative" };
+        }
+        ingredientDetails.price = details.price;
+    } else if (!optional) {
+        throw { code: 400, message: "Price required" };
+    }
+
+    // Check to make sure details are not empty
+    // if they are optional
+    if (optional) {
+        if (Object.keys(ingredientDetails).length === 0) {
+            throw { code: 400, message: "No details to update" };
+        }
+    }
+
+    // Return the details
+    return ingredientDetails;
+}
+
+
+////////////////////
+//    Requests    //
+////////////////////
+
 // GET: /
 async function getIngredients(req, res) {
+    /**
+     * Body: null
+     */
     try {
+        // No inputs to check
+        /////////////////////
+        //  Perform logic  //
+        /////////////////////
+
         // Get all ingredients
         const ingredients = await db.ingredients.findAll();
 
-        // Return the ingredients
+
+        ///////////////////////
+        //  Send a response  //
+        ///////////////////////
         res.status(200).json({
             status: "success",
             data: ingredients
         });
-
-    // Catch any database errors
     } catch (error) {
         return sendError(res, error, "Failed to fetch ingredients");
     }
@@ -37,97 +183,62 @@ async function getIngredients(req, res) {
 
 // GET: /:id
 async function getIngredientById(req, res) {
+    /**
+     * Body: null
+     */
     try {
-        // Get the ingredient ID
-        const id = req.params.id;
-        
-        if (id !== undefined) {
-            if (isNaN(id)) {
-                throw { code: 400, message: "Invalid ingredient ID" };
-            }
-            if (id < 0) {
-                throw { code: 400, message: "Invalid ingredient ID" };
-            }
-        } else {
-            throw { code: 400, message: "Ingredient ID Required" };
-        }
+        ///////////////////////////
+        //  Run checks on input  //
+        ///////////////////////////
+        const ingredient = await checkIngredientId(req.params.id);
 
-        const ingredient = await db.ingredients.findByPk(id);
-        if (ingredient === null) {
-            throw { code: 404, message: "Ingredient not found" };
-        }
 
-        // Return the ingredient
+        // No logic to perform
+        ///////////////////////
+        //  Send a response  //
+        ///////////////////////
         res.status(200).json({
             status: "success",
             data: ingredient
         });
-
-    // Catch any database errors
     } catch (error) {
         return sendError(res, error, "Failed to fetch ingredient");
     }
 }
 
-// Check to make sure all required fields are present
-function checkIngredientParams(ingredient) {
-    if (ingredient.name === undefined || typeof ingredient.name !== "string") {
-        throw { code: 400, message: "Name required" };
-    }
-
-    if (ingredient.description === undefined || typeof ingredient.description !== "string") {
-        throw { code: 400, message: "Description required" };
-    }
-    
-    if (ingredient.quantity !== undefined) {
-        if (typeof ingredient.quantity !== "number") {
-            throw { code: 400, message: "Quantity required" };
-        } else if (ingredient.quantity < 0) {
-            throw { code: 400, message: "Quantity must be greater than 0" };
-        }
-    } else {
-        throw { code: 400, message: "Quantity required" };
-    }
-
-    if (ingredient.photo === undefined || typeof ingredient.photo !== "string") {
-        throw { code: 400, message: "Photo required" };
-    }
-
-    if (ingredient.productLink === undefined || typeof ingredient.productLink !== "string") {
-        throw { code: 400, message: "Product link required" };
-    }
-    
-    if (ingredient.price !== undefined) {
-        if (typeof ingredient.price !== "number") {
-            throw { code: 400, message: "Price required" };
-        } else if (ingredient.price < 0) {
-            throw { code: 400, message: "Price must be greater than 0" };
-        }
-    } else {
-        throw { code: 400, message: "Price required" };
-    }
-}
-
 // POST: /create
 async function createIngredient(req, res) {
+    /**
+     * Body: {
+     *     name: string,
+     *     description: string,
+     *     quantity: number,
+     *     photo: string,
+     *     productLink: string,
+     *     price: number
+     * }
+     */
     try {
-        // Get the ingredient data
-        const ingredientParams = req.body;
+        ///////////////////////////
+        //  Run checks on input  //
+        ///////////////////////////
+        const ingredientDetails = checkIngredientDetails(req.body);
 
-        // Check the ingredient data
-        checkIngredientParams(ingredientParams);
+
+        /////////////////////
+        //  Perform logic  //
+        /////////////////////
+
+        // Save the photo
+        ingredientDetails.photo = await savePhoto(ingredientDetails.photo);
 
         // Create the ingredient
-        const ingredient = await db.ingredients.create({
-            name: ingredientParams.name,
-            description: ingredientParams.description,
-            quantity: ingredientParams.quantity,
-            photo: await savePhoto(ingredientParams.photo),
-            productLink: ingredientParams.productLink,
-            price: ingredientParams.price
-        });
+        const ingredient = await db.ingredients.create(ingredientDetails);
 
-        // Return the ingredient
+
+        ///////////////////////
+        //  Send a response  //
+        ///////////////////////
         res.status(201).json({
             status: "success",
             data: ingredient
@@ -137,148 +248,78 @@ async function createIngredient(req, res) {
     }
 }
 
-function checkUpdateIngredientDetails(ingredientDetails) {
-    if (ingredientDetails.name !== undefined) {
-        if (typeof ingredientDetails.name !== "string") {
-            throw { code: 400, message: "Name must be a string" };
-        }
-    }
-
-    if (ingredientDetails.description !== undefined) {
-        if (typeof ingredientDetails.description !== "string") {
-            throw { code: 400, message: "Description required" };
-        }
-    }
-    
-    if (ingredientDetails.quantity !== undefined) {
-        if (typeof ingredientDetails.quantity !== "number") {
-            throw { code: 400, message: "Quantity required" };
-        } else if (ingredientDetails.quantity < 0) {
-            throw { code: 400, message: "Quantity must be greater than 0" };
-        }
-    }
-
-    if (ingredientDetails.photo !== undefined) {
-        if (typeof ingredientDetails.photo !== "string") {
-            throw { code: 400, message: "Photo required" };
-        }
-    }
-
-    if (ingredientDetails.productLink !== undefined) {
-        if (typeof ingredientDetails.productLink !== "string") {
-            throw { code: 400, message: "Product link required" };
-        }
-    }
-    
-    if (ingredientDetails.price !== undefined) {
-        if (typeof ingredientDetails.price !== "number") {
-            throw { code: 400, message: "Price required" };
-        } else if (ingredientDetails.price < 0) {
-            throw { code: 400, message: "Price must be greater than 0" };
-        }
-    }
-}
-
 // PUT: /update/:id
 async function updateIngredient(req, res) {
+    /**
+     * Body: {
+     *     name: string,
+     *     description: string,
+     *     quantity: number,
+     *     photo: string,
+     *     productLink: string,
+     *     price: number
+     * }
+     */
     try {
-        // Get possible fields to update
-        const ingredientDetails = req.body;
-        const id = req.params.id != undefined ? Number(req.params.id) : req.params.id;
+        ///////////////////////////
+        //  Run checks on input  //
+        ///////////////////////////
+        const ingredient = await checkIngredientId(req.params.id);
+        const ingredientDetails = checkIngredientDetails(req.body, true);
 
-        // Check the values
-        checkUpdateIngredientDetails(ingredientDetails);
 
-        if (id !== undefined && ingredientDetails.id !== undefined) {
-            if (isNaN(id) || id < 0 || isNaN(ingredientDetails.id) || ingredientDetails.id < 0) {
-                throw { code: 400, message: "Invalid ingredient ID" };
-            }
-            if (id !== ingredientDetails.id) {
-                throw { code: 400, message: "Ingredient ID mismatch" };
-            }
-        } else {
-            throw { code: 400, message: "Ingredient ID required" };
-        }
+        /////////////////////
+        //  Perform logic  //
+        /////////////////////
 
-        let ingredient = await db.ingredients.findByPk(id);
-        if (!ingredient) {
-            throw { code: 404, message: "Ingredient not found" };
+        // Check if photo needs to be updated
+        if (ingredientDetails.photo) {
+            // Save the photo
+            ingredientDetails.photo = await savePhoto(ingredientDetails.photo);
         }
 
         // Update the ingredient
-        let updatedIngredient = {};
-        for (const key in ingredientDetails) {
-            if (ingredientDetails[key] != undefined && (key != "id" || key != "photo")) {
-                updatedIngredient[key] = ingredientDetails[key];
-            }
-        }
-        
-        if (ingredientDetails.photo !== undefined) {
-            updatedIngredient.photo = await savePhoto(ingredientDetails.photo);
-        } else {
-            updatedIngredient.photo = ingredient.photo;
-        }
+        await ingredient.update(ingredientDetails);
 
-        // Update the ingredient
-        if (Object.keys(updatedIngredient).length !== 0) {
-            await db.ingredients.update(
-                updatedIngredient,
-                { 
-                    where: { 
-                        id: id 
-                    } 
-                }
-            )
-        }
 
-        // Return that we updated the ingredient
+        ///////////////////////
+        //  Send a response  //
+        ///////////////////////
         res.status(200).json({
             status: "success",
-            data: "Ingredient updated"
+            data: {
+                message: "Ingredient updated"
+            }
         });
-
     } catch (error) {
         sendError(res, error, "Failed to update ingredient");
     }
 }
 
-// DELETE: /delete
+// DELETE: /delete/:id
 async function deleteIngredient(req, res) {
+    /**
+     * Body: null
+     */
     try {
-        // Get the ingredient ID
-        const id = req.body.id;
-        const id2 = req.params.id != undefined ? Number(req.params.id) : req.params.id;
+        ///////////////////////////
+        //  Run checks on input  //
+        ///////////////////////////
+        const ingredient = await checkIngredientId(req.params.id);
 
-        // Check the ingredient ID
-        if (id !== undefined && id2 !== undefined) {
-            if (isNaN(id) || isNaN(id2)) {
-                throw { code: 400, message: "Invalid ingredient ID" };
-            }
-            if (id < 0 || id2 < 0) {
-                throw { code: 400, message: "Invalid ingredient ID" };
-            }
-            if (id !== id2) {
-                throw { code: 400, message: "Ingredient ID mismatch" };
-            }
-        } else {
-            throw { code: 400, message: "Ingredient ID required" };
-        }
-
-        // Get the ingredient
-        const ingredient = await db.ingredients.findByPk(id);
-
-        // Check if the ingredient exists
-        if (ingredient === null) {
-            throw { code: 404, message: "Ingredient not found" };
-        }
-
-        // Delete the ingredient
+        ////////////////////
+        //  Perform logic //
+        ////////////////////
         await ingredient.destroy();
 
-        // Return the ingredient
+        //////////////////////
+        //  Send a response //
+        //////////////////////
         res.status(200).json({
             status: "success",
-            data: "Ingredient deleted"
+            data: {
+                message: "Ingredient deleted"
+            }
         });
     } catch (error) {
         sendError(res, error, "Failed to delete ingredient");
