@@ -1,0 +1,482 @@
+/api/v1/ingredients/:
+  get:
+    tags: [Ingredients]
+    summary: Get all ingredients
+    responses:
+      200:
+        description: A list of ingredients
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                  value: success
+                data:
+                  description: The list of ingredients
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        description: The ingredient ID
+                        type: integer
+                      name:
+                        description: The ingredient name
+                        type: string
+                      description:
+                        description: The ingredient description
+                        type: string
+                      quantity:
+                        description: The ingredient quantity
+                        type: decimal
+                        format: float
+                      photo:
+                        description: The ingredient photo path
+                        type: string
+                      productLink:
+                        description: The ingredient product link
+                        type: string
+                      price:
+                        description: The ingredient price
+                        type: decimal
+                        format: float
+            example:
+              status: success
+              data:
+                - id: 1
+                  name: Ingredient 1
+                  description: Description of ingredient 1
+                  quantity: 1.5
+                  photo: /path/to/photo
+                  productLink: https://www.example.com
+                  price: 1.99
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                  value: error
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Internal server error
+
+/api/v1/ingredients/{id}:
+  get:
+    tags: [Ingredients]
+    summary: Get an ingredient by ID
+    parameters:
+      - name: id
+        in: path
+        description: The ID of the ingredient
+        required: true
+        schema:
+          type: integer
+        example: 1
+    responses:
+      200:
+        description: The ingredient with the specified ID
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                  value: success
+                data:
+                  description: The ingredient
+                  type: object
+                  properties:
+                    id:
+                      description: The ingredient ID
+                      type: integer
+                    name:
+                      description: The ingredient name
+                      type: string
+                    description:
+                      description: The ingredient description
+                      type: string
+                    quantity:
+                      description: The ingredient quantity
+                      type: decimal
+                      format: float
+                    photo:
+                      description: The ingredient photo path
+                      type: string
+                    productLink:
+                      description: The ingredient product link
+                      type: string
+                    price:
+                      description: The ingredient price
+                      type: decimal
+                      format: float
+            example:
+              status: success
+              data:
+                id: 1
+                name: Ingredient 1
+                description: Description of ingredient 1
+                quantity: 1.5
+                photo: /path/to/photo
+                productLink: https://www.example.com
+                price: 1.99
+      404:
+        description: Ingredient not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                  value: error
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Ingredient not found
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                  value: error
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Internal server error
+
+/api/v1/ingredients/create:
+  post:
+    tags: [Ingredients]
+    summary: Create a new ingredient
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                description: The ingredient name
+                type: string
+              description:
+                description: The ingredient description
+                type: string
+              quantity:
+                description: The ingredient quantity
+                type: integer
+              photo:
+                description: The ingredient photo path
+                type: string
+              productLink:
+                description: The ingredient product link
+                type: string
+              price:
+                description: The ingredient price
+                type: decimal
+                format: float
+          example:
+            name: Ingredient 1
+            description: Description of ingredient 1
+            quantity: 1
+            photo: /path/to/photo
+            productLink: https://www.example.com
+            price: 1.99
+    responses:
+      201:
+        description: Ingredient created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                  value: success
+                data:
+                  description: The created ingredient
+                  type: object
+                  properties:
+                    id:
+                      description: The ingredient ID
+                      type: integer
+                    name:
+                      description: The ingredient name
+                      type: string
+                    description:
+                      description: The ingredient description
+                      type: string
+                    quantity:
+                      description: The ingredient quantity
+                      type: decimal
+                      format: float
+                    photo:
+                      description: The ingredient photo path
+                      type: string
+                    productLink:
+                      description: The ingredient product link
+                      type: string
+                    price:
+                      description: The ingredient price
+                      type: decimal
+                      format: float
+            example:
+              status: success
+              data:
+                id: 1
+                name: Ingredient 1
+                description: Description of ingredient 1
+                quantity: 1.5
+                photo: /path/to/photo
+                productLink: https://www.example.com
+                price: 1.99
+      400:
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Name required
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                  value: error
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Internal server error
+
+/api/v1/ingredients/update/{id}:
+  put:
+    tags: [Ingredients]
+    summary: Update an ingredient by ID
+    parameters:
+      - name: id
+        in: path
+        description: The ID of the ingredient
+        required: true
+        schema:
+          type: integer
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                description: The ingredient name
+                type: string
+              description:
+                description: The ingredient description
+                type: string
+              quantity:
+                description: The ingredient quantity
+                type: integer
+              photo:
+                description: The ingredient photo path
+                type: string
+              productLink:
+                description: The ingredient product link
+                type: string
+              price:
+                description: The ingredient price
+                type: decimal
+                format: float
+          example:
+            name: Ingredient 1
+            description: Description of ingredient 1
+            quantity: 1
+            photo: /path/to/photo
+            productLink: https://www.example.com
+            price: 1.99
+    responses:
+      200:
+        description: Ingredient updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                  value: success
+                data:
+                  description: The updated ingredient
+                  type: object
+                  properties:
+                    message:
+                      description: The success message
+                      type: string
+            example:
+              status: success
+              data:
+                message: Ingredient updated
+      400:
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Name required
+      404:
+        description: Ingredient not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                  value: error
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Ingredient not found
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                  value: error
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Internal server error
+
+/api/v1/ingredients/delete/{id}:
+  delete:
+    tags: [Ingredients]
+    summary: Delete an ingredient by ID
+    parameters:
+      - name: id
+        in: path
+        description: The ID of the ingredient
+        required: true
+        schema:
+          type: integer
+        example: 1
+    responses:
+      200:
+        description: Ingredient deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                  value: success
+                data:
+                  description: The success message
+                  type: string
+            example:
+              status: success
+              data: Ingredient deleted
+      404:
+        description: Ingredient not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                  value: error
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Ingredient not found
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                  value: error
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Internal server error
+
+
+
+
+
+
+
+
+
+
