@@ -67,13 +67,18 @@ function checkCategoryDetails(details, optional=false) {
         if (typeof details.description !== "string") {
             throw { code: 400, message: "Description must be a string" };
         }
+
+        if (details.description === "") {
+            throw { code: 400, message: "Description empty" };
+        }
+
         categoryDetails.description = details.description;
     }
 
     // Check if the details are optional
     if (optional) {
         if (Object.keys(categoryDetails).length === 0) {
-            throw { code: 400, message: "No fields to update" };
+            throw { code: 400, message: "No details to update" };
         }
     }
 
