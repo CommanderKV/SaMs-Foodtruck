@@ -13,7 +13,7 @@ function sendError(res, error, message) {
             message: error.message
         });
     } else {
-        console.log(`${message} --ERROR-- ${error}`);
+        console.log(`${message} --ERROR-- ${error} -- STACK -- ${error.stack}`);
         return res.status(500).json({
             status: "failure",
             message: message
@@ -91,8 +91,15 @@ function cleanProduct(products) {
 }
 
 async function checkProductId(productId) {
+    // Check if the product ID is undefined
+    if (productId === undefined) {
+        throw {code: 400, message: "Product ID is required"};
+    }
+
     // Check if the product ID is valid
-    if (isNaN(productId) || productId <= 0) {
+    if (isNaN(productId)) {
+        throw {code: 400, message: "Product ID must be a number"};
+    } else if (productId <= 0) {
         throw {code: 400, message: "Invalid product ID"};
     }
 
@@ -107,9 +114,16 @@ async function checkProductId(productId) {
 }
 
 async function checkCategoryId(categoryId) {
+    // Check if the category ID is undefined
+    if (categoryId === undefined) {
+        throw {code: 400, message: "Category ID is required"};
+    }
+
     // Check if the category ID is valid
-    if (isNaN(categoryId) || categoryId <= 0) {
-        throw {code: 400, message: "Invalid category ID"};
+    if (isNaN(categoryId)) {
+        throw {code: 400, message: "Category ID must be a number"};
+    } else if (categoryId <= 0) {
+        throw {code: 400, message: "Category ID must be greater than 0"};
     }
 
     // Check if the category exists
@@ -122,9 +136,16 @@ async function checkCategoryId(categoryId) {
 }
 
 async function checkIngredientId(ingredientId) {
+    // Check if the ingredient ID is undefined
+    if (ingredientId === undefined) {
+        throw {code: 400, message: "Ingredient ID is required"};
+    }
+
     // Check if the ingredient ID is valid
-    if (isNaN(ingredientId) || ingredientId <= 0) {
-        throw {code: 400, message: "Invalid ingredient ID"};
+    if (isNaN(ingredientId)) {
+        throw {code: 400, message: "Ingredient ID must be a number"};
+    } else if (ingredientId <= 0) {
+        throw {code: 400, message: "Ingredient ID must be greater than 0"};
     }
 
     // Check if the ingredient exists
@@ -137,6 +158,11 @@ async function checkIngredientId(ingredientId) {
 }
 
 async function checkOptionGroupId(optionGroupId) {
+    // Check if the optionGroup ID is undefined
+    if (optionGroupId === undefined) {
+        throw {code: 400, message: "OptionGroup ID is required"};
+    }
+
     // Check if the optionGroup ID is valid
     if (isNaN(optionGroupId) || optionGroupId <= 0) {
         throw {code: 400, message: "Invalid optionGroup ID"};
@@ -177,8 +203,8 @@ function checkProductDetails(productDetails) {
         if (typeof productDetails.price !== "number") {
             throw {code: 400, message: "Price must be a decimal number"};
         }
-        if (productDetails.price <= 0) {
-            throw {code: 400, message: "Price must be greater than 0"};
+        if (productDetails.price < 0) {
+            throw {code: 400, message: "Price cannot be negative"};
         }
     } else {
         throw {code: 400, message: "Price is required"};
@@ -233,8 +259,8 @@ async function getUpdatedProduct(details) {
         if (typeof details.price !== "number") {
             throw {code: 400, message: "Price must be a decimal number"};
         }
-        if (details.price <= 0) {
-            throw {code: 400, message: "Price must be greater than 0"};
+        if (details.price < 0) {
+            throw {code: 400, message: "Price cannot be negative"};
         }
 
         updatedProduct.price = details.price;
@@ -413,13 +439,18 @@ async function getProductById(req, res) {
         // Clean the response
         var productDetails = cleanProduct(product);
 
+        // Make sure we only have one product
+        if (productDetails.length > 1) {
+            throw {code: 500, message: "Multiple products found"};
+        }
+
 
         ///////////////////////
         //  Send a response  //
         ///////////////////////
         res.status(200).json({
             status: "success",
-            data: productDetails
+            data: productDetails[0]
         });
     } catch (error) {
         return sendError(res, error, "Failed to get product by ID");
@@ -484,6 +515,11 @@ async function updateProduct(req, res) {
         ///////////////////////////
         //  Run checks in input  //
         ///////////////////////////
+        
+        // Check that the paths id is the same as the body id
+        if (req.params.id != req.body.id) {
+            throw {code: 400, message: "Product ID mismatch"};
+        }
         const product = await checkProductId(req.params.id);
         var updateProductDetails = await getUpdatedProduct(req.body);
 
@@ -560,7 +596,7 @@ async function addCategory(req, res) {
         //  Run checks on input  //
         ///////////////////////////
         const product = await checkProductId(req.params.id);
-        const category = await checkCategoryId(categoryId);
+        const category = await checkCategoryId(req.body.id);
 
 
         /////////////////////
@@ -693,7 +729,7 @@ async function addOptionGroup(req, res) {
 }
 
 // DELETE: /:id/optionGroups
-async function removeOption(req, res) {
+async function removeOptionGroup(req, res) {
     /**
      * Body: {
      *    id: 1
@@ -833,14 +869,16 @@ async function updateIngredient(req, res) {
             if (quantity <= 0) {
                 throw {code: 400, message: "Ingredient quantity must be greater than 0"};
             }
-        } else if (measurement != undefined) {
+        } 
+        if (measurement != undefined) {
             if (typeof measurement !== "string") {
                 throw {code: 400, message: "Ingredient measurement must be a string"};
             }
             if (measurement.trim() === "") {
                 throw {code: 400, message: "Ingredient measurement must not be empty"};
             }
-        } else {
+        }
+        if (quantity === undefined && measurement === undefined) {
             throw {code: 400, message: "Ingredient needs quantity or measurement to update"};
         }
 
@@ -940,7 +978,7 @@ export default {
     addCategory,
     removeCategory,
     addOptionGroup,
-    removeOption,
+    removeOptionGroup,
     addIngredient,
     updateIngredient,
     removeIngredient
