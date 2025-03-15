@@ -90,25 +90,19 @@ function cleanProduct(products) {
     return products;
 }
 
-async function checkProductId(productId, options={}) {
+async function checkProductId(productId) {
     // Check if the product ID is valid
     if (isNaN(productId) || productId <= 0) {
         throw {code: 400, message: "Invalid product ID"};
     }
 
-    // Check if the product exists or get all
-    var foundProduct;
-    if (Object.keys(options).length === 0) {
-        foundProduct = await db.products.findByPk(productId);
-    } else {
-        foundProduct = await db.products.findAll(productId, options);
-    }
-
+    // Check if the product exists
+    const foundProduct = await db.products.findByPk(productId);
     if (!foundProduct) {
         throw {code: 404, message: "Product not found"};
     }
     
-    // Return the product(s)
+    // Return the product
     return foundProduct;
 }
 
@@ -358,7 +352,15 @@ async function getProductById(req, res) {
         //////////////////////////
         //  Run checks on input //
         //////////////////////////
-        const product = await checkProductId(req.params.id, {
+        await checkProductId(req.params.id);
+
+
+        /////////////////////
+        //  Perform logic  //
+        /////////////////////
+
+        // Get the product
+        const product = await db.products.findByPk(req.params.id, {
             include: [
                 {
                     model: db.ingredients,
@@ -408,10 +410,7 @@ async function getProductById(req, res) {
             nest: true
         });
 
-
-        /////////////////////
-        //  Perform logic  //
-        /////////////////////
+        // Clean the response
         var productDetails = cleanProduct(product);
 
 
@@ -470,7 +469,7 @@ async function createProduct(req, res) {
     }
 };
 
-// PUT: /:id/update
+// PUT: /update/:id
 async function updateProduct(req, res) {
     /**
      * Body: {
@@ -519,40 +518,29 @@ async function updateProduct(req, res) {
 
 // DELETE: /delete/:id
 async function deleteProduct(req, res) {
+    /**
+     * Body: null
+     */
     try {
-        const productId = req.params.id != undefined ? Number(req.params.id) : undefined;
-        const productIdCheck = req.body.id;
+        ///////////////////////////
+        //  Run checks on input  //
+        ///////////////////////////
+        const product = await checkProductId(req.params.id);
 
-        // Check if the product ID is valid
-        if (productId != undefined || productIdCheck != undefined) {
-            if (typeof productId !== "number" || typeof productIdCheck !== "number") {
-                throw {code: 400, message: "Product ID must be a number"};
-            }
-            if (productId <= 0 && productIdCheck <= 0) {
-                throw {code: 400, message: "Invalid product ID"};
-            }
-            if (productId != productIdCheck) {
-                throw {code: 400, message: "Product ID mismatch"};
-            }
 
-            // Check if the product exists
-            const foundProduct = await db.products.findOne({ where: { id: productId } });
-            if (!foundProduct) {
-                throw {code: 404, message: "Product not found"};
-            }
-        } else {
-            throw {code: 400, message: "Product ID is required"};
-        }
+        /////////////////////
+        //  Perform logic  //
+        /////////////////////
+        await product.destroy();
 
-        // Delete the product
-        await db.products.destroy({ where: { id: productId } });
 
-        // Send response
+        ///////////////////////
+        //  Send a response  //
+        ///////////////////////
         res.status(200).json({
             status: "success",
             message: "Product deleted successfully"
         });
-
     } catch (error) {
         return sendError(res, error, "Failed to delete product");
     }
