@@ -6,13 +6,6 @@ describe("Category Controller", () => {
     // Define testing data
     let testingData = {};
     beforeEach(async () => {
-        // Remove all categories
-        await db.categories.findAll().then((category) => {
-            category.forEach(async (category) => {
-                await category.destroy();
-            });
-        });
-
         // Create testing data
         testingData.category = await db.categories.create({
             name: "Test Category",
@@ -24,8 +17,13 @@ describe("Category Controller", () => {
         });
     });
 
+    afterEach(async () => {
+        // Remove all categories
+        await db.categories.destroy({ where: {} });
+    });
+
     describe("GET /", () => {
-        it("Should return all categories", async () => {
+        it("should return all categories", async () => {
             // Send a request
             const response = await request(app)
                 .get("/api/v1/categories");
@@ -51,7 +49,7 @@ describe("Category Controller", () => {
     });
 
     describe("GET /:id", () => {
-        it("Should return a category by ID", async () => {
+        it("should return a category by ID", async () => {
             // Send a request
             const response = await request(app)
                 .get(`/api/v1/categories/${testingData.category.id}`);
@@ -62,7 +60,7 @@ describe("Category Controller", () => {
             expect(response.body.data.id).toBe(testingData.category.id);
         });
 
-        it("Should return an error for invalid ID", async () => {
+        it("should return 404 for invalid ID", async () => {
             // Send a request
             const response = await request(app)
                 .get(`/api/v1/categories/${testingData.category.id+10}`);
@@ -73,7 +71,7 @@ describe("Category Controller", () => {
             expect(response.body.message).toBe("Category not found");
         });
 
-        it("Should return an error for having a negative ID", async () => {
+        it("should return 400 for having a negative ID", async () => {
             // Send a request
             const response = await request(app)
                 .get(`/api/v1/categories/-1`);
@@ -81,7 +79,7 @@ describe("Category Controller", () => {
             // Check the response
             expect(response.status).toBe(400);
             expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("Invalid category ID");
+            expect(response.body.message).toBe("Category ID must be greater than 0");
         });
 
         it("should return 400 if the category ID is not a number", async () => {
@@ -91,12 +89,12 @@ describe("Category Controller", () => {
             // Check the status code and response structure
             expect(response.status).toBe(400);
             expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("Invalid category ID");
+            expect(response.body.message).toBe("Category ID must be a number");
         });
     });
 
     describe("POST /create", () => {
-        it("Should create a new category", async () => {
+        it("should create a new category", async () => {
             // Send a request
             const response = await request(app)
                 .post("/api/v1/categories/create")
@@ -111,7 +109,7 @@ describe("Category Controller", () => {
             expect(response.body.data.name).toBe("New Category");
         });
 
-        it("Should return an error for missing name", async () => {
+        it("should return 400 for missing name", async () => {
             // Send a request
             const response = await request(app)
                 .post("/api/v1/categories/create")
@@ -125,7 +123,37 @@ describe("Category Controller", () => {
             expect(response.body.message).toBe("Name required");
         });
 
-        it("Should return an error for description not being a string", async () => {
+        it("should return 400 if name is not a string", async () => {
+            // Send a request
+            const response = await request(app)
+                .post("/api/v1/categories/create")
+                .send({
+                    name: 123,
+                    description: "This is a new category"
+                });
+            
+            // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Name must be a string");
+        });
+
+        it("should return 400 if name is empty", async () => {
+            // Send a request
+            const response = await request(app)
+                .post("/api/v1/categories/create")
+                .send({
+                    name: "",
+                    description: "This is a new category"
+                });
+            
+            // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Name required");
+        });
+
+        it("should return 400 if description is not a string", async () => {
             // Send a request
             const response = await request(app)
                 .post("/api/v1/categories/create")
@@ -139,15 +167,29 @@ describe("Category Controller", () => {
             expect(response.body.status).toBe("failure");
             expect(response.body.message).toBe("Description must be a string");
         });
+
+        it("should return 400 if description is empty", async () => {
+            // Send a request
+            const response = await request(app)
+                .post("/api/v1/categories/create")
+                .send({
+                    name: "New Category",
+                    description: ""
+                });
+            
+            // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("Description empty");
+        });
     });
 
     describe("PUT /update/:id", () => {
-        it("Should update a category", async () => {
+        it("should update a category", async () => {
             // Send request
             const response = await request(app)
                 .put(`/api/v1/categories/update/${testingData.category.id}`)
                 .send({
-                    id: testingData.category.id,
                     name: "Updated Category",
                     description: "This is an updated category"
                 });
@@ -155,7 +197,7 @@ describe("Category Controller", () => {
             // Check the response
             expect(response.status).toBe(200);
             expect(response.body.status).toBe("success");
-            expect(response.body.data).toBe("Category updated");
+            expect(response.body.data.message).toBe("Category updated");
 
             // Check the category
             const category = await db.categories.findByPk(testingData.category.id);
@@ -163,26 +205,25 @@ describe("Category Controller", () => {
             expect(category.description).toBe("This is an updated category");
         });
 
-        it("Should update a category's name", async () => {
+        it("should update a category's name", async () => {
             // Send request
             const response = await request(app)
                 .put(`/api/v1/categories/update/${testingData.category.id}`)
                 .send({
-                    id: testingData.category.id,
                     name: "Updated Category"
                 });
 
             // Check the response
             expect(response.status).toBe(200);
             expect(response.body.status).toBe("success");
-            expect(response.body.data).toBe("Category updated");
+            expect(response.body.data.message).toBe("Category updated");
 
             // Check the category
             const category = await db.categories.findByPk(testingData.category.id);
             expect(category.name).toBe("Updated Category");
         });
 
-        it("Should return an error for invalid ID", async () => {
+        it("should return 404 for invalid ID", async () => {
             // Send request
             const response = await request(app)
                 .put(`/api/v1/categories/update/${testingData.category.id+10}`)
@@ -196,63 +237,45 @@ describe("Category Controller", () => {
             expect(response.body.message).toBe("Category not found");
         });
 
-        it("Should return an error for mis-matching IDs", async () => {
-            // Send request
-            const response = await request(app)
-                .put(`/api/v1/categories/update/${testingData.category.id}`)
-                .send({
-                    id: testingData.category.id+1
-                });
-            
-            // Check the response
-            expect(response.status).toBe(400);
-            expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("Category ID mismatch");
-        });
-        
-        it("Should return an error for no ID given", async () => {
-            // Send request
-            const response = await request(app)
-                .put(`/api/v1/categories/update/`)
-                .send({});
-            
-            // Check the response
-            expect(response.status).toBe(400);
-            expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("Category ID required");
-        });
-
         it("should return 400 if the category ID is not a number", async () => {
             // Send request
             const response = await request(app)
                 .put(`/api/v1/categories/update/not-a-number`)
-                .send({
-                    id: "not-a-number"
-                });
+                .send();
 
             // Check the response
             expect(response.status).toBe(400);
             expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("Invalid category ID");
+            expect(response.body.message).toBe("Category ID must be a number");
         });
 
         it("should return 400 if the category ID is less than 0", async () => {
             // Send request
             const response = await request(app)
                 .put(`/api/v1/categories/update/-1`)
-                .send({
-                    id: -1
-                });
+                .send();
 
             // Check the response
             expect(response.status).toBe(400);
             expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("Invalid category ID");
+            expect(response.body.message).toBe("Category ID must be greater than 0");
+        });
+
+        it("should return 400 if there are no details to update", async () => {
+            // Send request
+            const response = await request(app)
+                .put(`/api/v1/categories/update/${testingData.category.id}`)
+                .send();
+
+            // Check the response
+            expect(response.status).toBe(400);
+            expect(response.body.status).toBe("failure");
+            expect(response.body.message).toBe("No details to update");
         });
     });
 
     describe("DELETE /delete/:id", () => {
-        it("Should delete a category", async () => {
+        it("should delete a category", async () => {
             // Send request
             const response = await request(app)
                 .delete(`/api/v1/categories/delete/${testingData.category.id}`)
@@ -263,20 +286,18 @@ describe("Category Controller", () => {
             // Check the response
             expect(response.status).toBe(200);
             expect(response.body.status).toBe("success");
-            expect(response.body.data).toBe("Category deleted");
+            expect(response.body.data.message).toBe("Category deleted");
 
             // Check that category was deleted
             const category = await db.categories.findByPk(testingData.category.id);
             expect(category).toBeNull();
         });
 
-        it("Should return an error for invalid ID", async () => {
+        it("should return 404 for invalid ID", async () => {
             // Send request
             const response = await request(app)
                 .delete(`/api/v1/categories/delete/${testingData.category.id + 30}`)
-                .send({
-                    id: testingData.category.id + 30
-                });
+                .send();
             
             // Check the response
             expect(response.status).toBe(404);
@@ -284,44 +305,16 @@ describe("Category Controller", () => {
             expect(response.body.message).toBe("Category not found");
         });
 
-        it("Should return an error for mis-matching IDs", async () => {
-            // Send request
-            const response = await request(app)
-                .delete(`/api/v1/categories/delete/${testingData.category.id}`)
-                .send({
-                    id: testingData.category.id+1
-                });
-            
-            // Check the response
-            expect(response.status).toBe(400);
-            expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("Category ID mismatch");
-        });
-        
-        it("Should return an error for no ID given", async () => {
-            // Send request
-            const response = await request(app)
-                .delete(`/api/v1/categories/delete/`)
-                .send({});
-            
-            // Check the response
-            expect(response.status).toBe(400);
-            expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("Category ID required");
-        });
-
         it("should return 400 if the category ID is not a number", async () => {
             // Send request
             const response = await request(app)
                 .delete(`/api/v1/categories/delete/not-a-number`)
-                .send({
-                    id: "not-a-number"
-                });
+                .send();
 
             // Check the response
             expect(response.status).toBe(400);
             expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("Invalid category ID");
+            expect(response.body.message).toBe("Category ID must be a number");
         });
 
         it("should return 400 if the category ID is less than 0", async () => {
@@ -335,19 +328,7 @@ describe("Category Controller", () => {
             // Check the response
             expect(response.status).toBe(400);
             expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("Invalid category ID");
-        });
-
-        it("should return 400 if the category ID is missing in the request body", async () => {
-            // Send request
-            const response = await request(app)
-                .delete(`/api/v1/categories/delete/${testingData.category.id}`)
-                .send({});
-
-            // Check the response
-            expect(response.status).toBe(400);
-            expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("Category ID required");
+            expect(response.body.message).toBe("Category ID must be greater than 0");
         });
     });
 });
