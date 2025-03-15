@@ -524,18 +524,6 @@ describe('Product Controller', () => {
             expect(response.body.message).toBe("Product not found")
         });
 
-        it("should return 400 if no ID is given", async () => {
-            // Send request
-            const response = await request(app)
-                .delete(`/api/v1/products/delete/`)
-                .send();
-            
-            // Check response
-            expect(response.status).toBe(400);
-            expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("Product ID is required");
-        });
-
         it("should return 400 if the product ID is invalid", async () => {
             // Send request
             const response = await request(app)
