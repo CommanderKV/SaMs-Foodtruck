@@ -586,7 +586,9 @@ async function addCategory(req, res) {
         ///////////////////////
         res.status(200).json({
             status: "success",
-            message: "Category added successfully"
+            data: {
+                message: "Category added successfully"
+            }
         });
     } catch (error) {
         // Handle errors
@@ -632,7 +634,9 @@ async function removeCategory(req, res) {
         ///////////////////////
         res.status(200).json({
             status: "success",
-            message: "Category removed successfully"
+            data: {
+                message: "Category removed successfully"
+            }
         });
     } catch (error) {
         // Handle errors
@@ -678,7 +682,9 @@ async function addOptionGroup(req, res) {
         ///////////////////////
         res.status(200).json({
             status: "success",
-            message: "OptionGroup added successfully"
+            data: {
+                message: "OptionGroup added successfully"
+            }
         });
     } catch (error) {
         // Handle errors
@@ -724,7 +730,9 @@ async function removeOption(req, res) {
         ///////////////////////
         res.status(200).json({
             status: "success",
-            message: "OptionGroup removed successfully"
+            data: {
+                message: "OptionGroup removed successfully"
+            }
         });
     } catch (error) {
         // Handle errors
@@ -787,7 +795,9 @@ async function addIngredient(req, res) {
         ///////////////////////
         res.status(200).json({
             status: "success",
-            message: "Ingredient added successfully"
+            data: {
+                message: "Ingredient added successfully"
+            }
         });
     } catch (error) {
         // Handle errors
@@ -861,7 +871,9 @@ async function updateIngredient(req, res) {
         ///////////////////////
         res.status(200).json({
             status: "success",
-            message: "Ingredient updated successfully"
+            data: {
+                message: "Ingredient updated successfully"
+            }
         });
     } catch (error) {
         // Handle errors
