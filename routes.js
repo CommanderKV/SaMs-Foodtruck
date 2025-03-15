@@ -8,6 +8,7 @@ const router = Router();
 import productController from "./controllers/productController.js";
 import ingredientController from "./controllers/ingredientController.js";
 import categoryController from "./controllers/categoryController.js";
+import path from "path";
 
 //////////////////////////////////////////////
 //  Bellow are all the routes for this api  //
@@ -53,6 +54,42 @@ const routes = [
                         path: "/delete/:id",
                         method: "DELETE",
                         function: productController.deleteProduct
+                    },
+
+                    {
+                        path: "/:id/categories",
+                        method: "POST",
+                        function: productController.addCategory
+                    },
+                    {
+                        path: "/:id/categories",
+                        method: "DELETE",
+                        function: productController.removeCategory
+                    },
+                    {
+                        path: "/:id/optionGroups",
+                        method: "POST",
+                        function: productController.addOptionGroup
+                    },
+                    {
+                        path: "/:id/optionGroups",
+                        method: "DELETE",
+                        function: productController.removeOptionGroup
+                    },
+                    {
+                        path: "/:id/ingredients",
+                        method: "POST",
+                        function: productController.addIngredient
+                    },
+                    {
+                        path: "/:id/ingredients",
+                        method: "PUT",
+                        function: productController.updateIngredient
+                    },
+                    {
+                        path: "/:id/ingredients",
+                        method: "DELETE",
+                        function: productController.removeIngredient
                     }
                 ]
             },
