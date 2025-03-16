@@ -1,0 +1,467 @@
+/api/v1/options/:
+  get:
+    tags: [Options]
+    summary: Get all options
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                data:
+                  description: The options
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        description: The option ID
+                        type: integer
+                      priceAdjustment:
+                        description: The price adjustment for the option
+                        type: number
+                        format: float
+                      defaultQuantity:
+                        description: The default quantity for the option
+                        type: integer
+                      minQuantity:
+                        description: The minimum quantity for the option
+                        type: integer
+                      maxQuantity:
+                        description: The maximum quantity for the option
+                        type: integer
+            example:
+              status: success
+              data:
+                - id: 1
+                  priceAdjustment: 0.5
+                  defaultQuantity: 1
+                  minQuantity: 1
+                  maxQuantity: 10
+      500:
+        description: Internal Server Error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Internal Server Error
+
+/api/v1/options/{id}:
+  get:
+    summary: Get an option by ID
+    tags: [Options]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: The ID of the option
+        schema:
+          type: integer
+        example: 1
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                data:
+                  description: The option
+                  type: object
+                  properties:
+                    id:
+                      description: The option ID
+                      type: integer
+                    priceAdjustment:
+                      description: The price adjustment for the option
+                      type: number
+                      format: float
+                    defaultQuantity:
+                      description: The default quantity for the option
+                      type: integer
+                    minQuantity:
+                      description: The minimum quantity for the option
+                      type: integer
+                    maxQuantity:
+                      description: The maximum quantity for the option
+                      type: integer
+            example:
+              status: success
+              data:
+                id: 1
+                priceAdjustment: 0.5
+                defaultQuantity: 1
+                minQuantity: 1
+                maxQuantity: 10
+      400:
+        description: Bad Request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Invalid option ID
+      404:
+        description: Not Found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Option not found
+      500:
+        description: Internal Server Error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Internal Server Error
+
+/api/v1/options/create:
+  post:
+    summary: Create a new option
+    tags: [Options]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              priceAdjustment:
+                description: The price adjustment for the option
+                type: number
+                format: float
+              defaultQuantity:
+                description: The default quantity for the option
+                type: integer
+              minQuantity:
+                description: The minimum quantity for the option
+                type: integer
+              maxQuantity:
+                description: The maximum quantity for the option
+                type: integer
+              ingredientId:
+                description: The ID of the ingredient
+                type: integer
+            required:
+              - priceAdjustment
+              - defaultQuantity
+              - minQuantity
+              - maxQuantity
+              - ingredientId
+          example:
+            priceAdjustment: 0.5
+            defaultQuantity: 1
+            minQuantity: 1
+            maxQuantity: 10
+            ingredientId: 10
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                data:
+                  description: The response of the request
+                  type: object
+                  properties:
+                    message: 
+                      description: The message of the response
+                      type: string
+            example:
+              status: success
+              data:
+                message: Option created successfully
+      400:
+        description: Bad Request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Invalid request body
+      404:
+        description: Not Found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Ingredient not found
+      500:
+        description: Internal Server Error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Internal Server Error
+
+/api/v1/options/update/{id}:
+  put:
+    summary: Update an option by ID
+    tags: [Options]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: The ID of the option
+        schema:
+          type: integer
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              priceAdjustment:
+                description: The price adjustment for the option
+                type: number
+                format: float
+              defaultQuantity:
+                description: The default quantity for the option
+                type: integer
+              minQuantity:
+                description: The minimum quantity for the option
+                type: integer
+              maxQuantity:
+                description: The maximum quantity for the option
+                type: integer
+              ingredientId:
+                description: The ID of the ingredient
+                type: integer
+          example:
+            priceAdjustment: 0.5
+            defaultQuantity: 1
+            minQuantity: 1
+            maxQuantity: 10
+            ingredientId: 10
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                data:
+                  description: The response of the request
+                  type: object
+                  properties:
+                    message: 
+                      description: The message of the response
+                      type: string
+            example:
+              status: success
+              data:
+                message: Option updated successfully
+      400:
+        description: Bad Request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Invalid request body
+      404:
+        description: Not Found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Option not found
+      500:
+        description: Internal Server Error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Internal Server Error
+
+/api/v1/options/delete/{id}: 
+  delete:
+    summary: Delete an option by ID
+    tags: [Options]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: The ID of the option
+        schema:
+          type: integer
+        example: 1
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                data:
+                  description: The response of the request
+                  type: object
+                  properties:
+                    message: 
+                      description: The message of the response
+                      type: string
+            example:
+              status: success
+              data:
+                message: Option deleted successfully
+      400:
+        description: Bad Request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Invalid option ID
+      404:
+        description: Not Found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Option not found
+      500:
+        description: Internal Server Error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: failure
+              message: Internal Server Error
+
