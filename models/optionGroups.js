@@ -8,7 +8,12 @@ export default (sequelize, DataTypes) => {
                 validate: {
                     notEmpty: true,
                 },
-            }
+            },
+			multipleChoice: {
+				type: DataTypes.BOOLEAN,
+				allowNull: false,
+                default: true,
+			},
 		},
 		{
 			timestamps: false,
