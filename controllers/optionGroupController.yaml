@@ -1,0 +1,704 @@
+/api/v1/optionGroups/:
+  get:
+    summary: List all option groups
+    tags: [Option groups]
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                data:
+                  description: The list of option groups
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        description: The option group ID
+                        type: integer
+                      sectionName:
+                        description: The section name
+                        type: string
+                      multipleChoice:
+                        description: Whether the option group is multiple choice
+                        type: boolean
+            example:
+              status: "success"
+              data:
+                - id: 1
+                  sectionName: "Section 1"
+                  multipleChoice: true
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Internal server error"
+
+/api/v1/optionGroups/{id}:
+  get:
+    summary: Get an option group by ID
+    tags: [Option groups]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: The option group ID
+        schema:
+          type: integer
+        example: 1
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                data:
+                  description: The option group
+                  type: object
+                  properties:
+                    id:
+                      description: The option group ID
+                      type: integer
+                    sectionName:
+                      description: The section name
+                      type: string
+                    multipleChoice:
+                      description: Whether the option group is multiple choice
+                      type: boolean
+            example:
+              status: "success"
+              data:
+                id: 1
+                sectionName: "Section 1"
+                multipleChoice: true
+      400:
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid option group ID"
+      404:
+        description: Option group not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Option group not found"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Internal server error"
+
+/api/v1/optionGroups/create:
+  post:
+    summary: Create a new option group
+    tags: [Option groups]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              sectionName:
+                description: The section name
+                type: string
+              multipleChoice:
+                description: Whether the option group is multiple choice
+                type: boolean
+              productId:
+                description: The product ID
+                type: integer
+            required:
+              - sectionName
+              - multipleChoice
+              - productId
+          example:
+            sectionName: "Section 1"
+            multipleChoice: true
+            productId: 1
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                data:
+                  description: The created option group
+                  type: object
+                  properties:
+                    id:
+                      description: The option group ID
+                      type: integer
+                    sectionName:
+                      description: The section name
+                      type: string
+                    multipleChoice:
+                      description: Whether the option group is multiple choice
+                      type: boolean
+                    productId:
+                      description: The product ID
+                      type: integer
+            example:
+              status: "success"
+              data:
+                id: 1
+                sectionName: "Section 1"
+                multipleChoice: true
+                productId: 1
+      400:
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid request body"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Internal server error"
+
+/api/v1/optionGroups/update/{id}:
+  put:
+    summary: Update an option group by ID
+    tags: [Option groups]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: The option group ID
+        schema:
+          type: integer
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              sectionName:
+                description: The section name
+                type: string
+              multipleChoice:
+                description: Whether the option group is multiple choice
+                type: boolean
+          example:
+            sectionName: "Section 1"
+            multipleChoice: true
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                data:
+                  description: The updated option group
+                  type: object
+                  properties:
+                    id:
+                      description: The option group ID
+                      type: integer
+                    sectionName:
+                      description: The section name
+                      type: string
+                    multipleChoice:
+                      description: Whether the option group is multiple choice
+                      type: boolean
+            example:
+              status: "success"
+              data:
+                id: 1
+                sectionName: "Section 1"
+                multipleChoice: true
+      400:
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid request body"
+      404:
+        description: Option group not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Option group not found"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+
+/api/v1/optionGroups/delete/{id}:
+  delete:
+    summary: Delete an option group by ID
+    tags: [Option groups]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: The option group ID
+        schema:
+          type: integer
+        example: 1
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+            example:
+              status: "success"
+      400:
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid option group ID"
+      404:
+        description: Option group not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Option group not found"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Internal server error"
+
+
+/api/v1/optionGroups/:id/options:
+  get:
+    summary: List all options for an option group
+    tags: [Option groups]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: The option group ID
+        schema:
+          type: integer
+        example: 1
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                data:
+                  description: The list of options
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        description: The option ID
+                        type: integer
+                      priceAdjustment:
+                        description: The price adjustment
+                        type: number
+                        format: float
+                      defaultQuantity:
+                        description: The default quantity
+                        type: integer
+                      minQuantity:
+                        description: The minimum quantity
+                        type: integer
+                      maxQuantity:
+                        description: The maximum quantity
+                        type: integer
+            example:
+              status: "success"
+              data:
+                - id: 1
+                  priceAdjustment: 1.5
+                  defaultQuantity: 1
+                  minQuantity: 1
+                  maxQuantity: 5
+      400:
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid option group ID"
+      404:
+        description: Option group not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Option group not found"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Internal server error"
+
+  post:
+    summary: Create a new option for an option group
+    tags: [Option groups]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: The option group ID
+        schema:
+          type: integer
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              optionId:
+                description: The option ID
+                type: integer
+          example:
+            optionId: 1
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                data:
+                  description: The created option
+                  type: object
+                  properties:
+                    message:
+                      description: The success message
+                      type: string
+            example:
+              status: "success"
+              data:
+                message: "Option added to option group successfully"
+      400:
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid request body"
+      404:
+        description: Option group not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Option group not found"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Internal server error"
+
+/api/v1/optionGroups/:id/options/:optionId:
+  delete:
+    summary: Delete an option from an option group
+    tags: [Option groups]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: The option group ID
+        schema:
+          type: integer
+        example: 1
+      - in: path
+        name: optionId
+        required: true
+        description: The option ID
+        schema:
+          type: integer
+        example: 1
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                data:
+                  description: The success message
+                  type: object
+                  properties:
+                    message:
+                      description: The success message
+                      type: string
+            example:
+              status: "success"
+              data:
+                message: "Option successfully deleted."
+      400:
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Invalid option group ID or option ID"
+      404:
+        description: Option group or option not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Option group or option not found"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the response
+                  type: string
+                message:
+                  description: The error message
+                  type: string
+            example:
+              status: "failure"
+              message: "Internal server error"
+
+
+
+
+
+
