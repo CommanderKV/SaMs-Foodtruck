@@ -43,13 +43,14 @@ describe('Product Controller', () => {
 
         // Create option group linked to the product
         testingData.optionGroup = await testingData.product.createOptionGroup({
-            sectionName: "Test Option Group"
+            sectionName: "Test Option Group",
+            multipleChoice: true
         });
 
         // Create option linked to the option group and ingredient
         testingData.option = await testingData.optionGroup.createOption({
             priceAdjustment: 1.50,
-            multipleChoice: true,
+            defaultQuantity: 1,
             minQuantity: 0,
             maxQuantity: 1,
             ingredientId: testingData.ingredient.id

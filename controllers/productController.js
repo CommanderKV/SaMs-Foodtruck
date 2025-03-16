@@ -320,7 +320,11 @@ async function getAllProducts(req, res) {
                 {
                     model: db.optionGroups,
                     as: "optionGroups",
-                    attributes: ["id", "sectionName"],
+                    attributes: [
+                        "id", 
+                        "sectionName",
+                        "multipleChoice"
+                    ],
                     include: [
                         {
                             model: db.options,
@@ -328,9 +332,9 @@ async function getAllProducts(req, res) {
                             attributes: [
                                 "id", 
                                 "priceAdjustment", 
-                                "multipleChoice", 
                                 "minQuantity", 
-                                "maxQuantity"
+                                "maxQuantity",
+                                "defaultQuantity"
                             ],
                             include: [
                                 {
@@ -403,17 +407,21 @@ async function getProductById(req, res) {
                 {
                     model: db.optionGroups,
                     as: "optionGroups",
-                    attributes: ["id", "sectionName"],
+                    attributes: [
+                        "id", 
+                        "sectionName", 
+                        "multipleChoice"
+                    ],
                     include: [
                         {
                             model: db.options,
                             as: "options",
                             attributes: [
                                 "id", 
-                                "priceAdjustment", 
-                                "multipleChoice", 
+                                "priceAdjustment",
                                 "minQuantity", 
-                                "maxQuantity"
+                                "maxQuantity",
+                                "defaultQuantity"
                             ],
                             include: [
                                 {
