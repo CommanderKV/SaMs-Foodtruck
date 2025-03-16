@@ -9,6 +9,7 @@ import productController from "./controllers/productController.js";
 import ingredientController from "./controllers/ingredientController.js";
 import categoryController from "./controllers/categoryController.js";
 import discountController from "./controllers/discountController.js";
+import optionController from "./controllers/optionController.js";
 import path from "path";
 
 //////////////////////////////////////////////
@@ -171,6 +172,36 @@ const routes = [
                         path: "/delete/:id",
                         method: "DELETE",
                         function: discountController.deleteDiscount
+                    }
+                ]
+            },
+            {
+                path: "options",
+                routes: [
+                    {
+                        path: "",
+                        method: "GET",
+                        function: optionController.getOptions
+                    },
+                    {
+                        path: "/create",
+                        method: "POST",
+                        function: optionController.createOption
+                    },
+                    {
+                        path: "/:id",
+                        method: "GET",
+                        function: optionController.getOptionById
+                    },
+                    {
+                        path: "/update/:id",
+                        method: "PUT",
+                        function: optionController.updateOption
+                    },
+                    {
+                        path: "/delete/:id",
+                        method: "DELETE",
+                        function: optionController.deleteOption
                     }
                 ]
             }
