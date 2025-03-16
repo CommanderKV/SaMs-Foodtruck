@@ -10,6 +10,7 @@ import ingredientController from "./controllers/ingredientController.js";
 import categoryController from "./controllers/categoryController.js";
 import discountController from "./controllers/discountController.js";
 import optionController from "./controllers/optionController.js";
+import optionGroupController from "./controllers/optionGroupController.js";
 import path from "path";
 
 //////////////////////////////////////////////
@@ -202,6 +203,53 @@ const routes = [
                         path: "/delete/:id",
                         method: "DELETE",
                         function: optionController.deleteOption
+                    },
+                ]
+            },
+            {
+                path: "optionGroups",
+                routes: [
+                    {
+                        
+                        path: "",
+                        method: "GET",
+                        function: optionGroupController.getOptionGroups
+                    },
+                    {
+                        path: "/:id",
+                        method: "GET",
+                        function: optionGroupController.getOptionGroupById
+                    },
+                    {
+                        path: "/create",
+                        method: "POST",
+                        function: optionGroupController.createOptionGroup
+                    },
+                    {
+                        path: "/update/:id",
+                        method: "PUT",
+                        function: optionGroupController.updateOptionGroup
+                    },
+                    {
+                        path: "/delete/:id",
+                        method: "DELETE",
+                        function: optionGroupController.deleteOptionGroup
+                    },
+
+                    {
+                        path: "/:id/options",
+                        method: "GET",
+                        function: optionGroupController.getOptionsInOptionGroup
+                    },
+                    {
+                        path: "/:id/options",
+                        method: "POST",
+                        function: optionGroupController.addOptionToOptionGroup
+                    },
+                    {
+                        path: "/:id/options/:optionId",
+                        method: "DELETE",
+                        function: optionGroupController.removeOptionFromOptionGroup
                     }
                 ]
             }
