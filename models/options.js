@@ -6,10 +6,12 @@ export default (sequelize, DataTypes) => {
 				type: DataTypes.DECIMAL(10, 2),
 				allowNull: false,
 			},
-			multipleChoice: {
-				type: DataTypes.BOOLEAN,
+			defaultQuantity: {
+				type: DataTypes.INTEGER,
 				allowNull: false,
-                default: true,
+				validate: {
+					min: 0,
+				},
 			},
 			minQuantity: {
 				type: DataTypes.INTEGER,
