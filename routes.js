@@ -8,6 +8,7 @@ const router = Router();
 import productController from "./controllers/productController.js";
 import ingredientController from "./controllers/ingredientController.js";
 import categoryController from "./controllers/categoryController.js";
+import discountController from "./controllers/discountController.js";
 import path from "path";
 
 //////////////////////////////////////////////
@@ -140,6 +141,36 @@ const routes = [
                         path: "/delete/:id",
                         method: "DELETE",
                         function: categoryController.deleteCategory
+                    }
+                ]
+            },
+            {
+                path: "discounts",
+                routes: [
+                    {
+                        path: "",
+                        method: "GET",
+                        function: discountController.getAllDiscounts
+                    },
+                    {
+                        path: "/:id",
+                        method: "GET",
+                        function: discountController.getDiscountById
+                    },
+                    {
+                        path: "/create",
+                        method: "POST",
+                        function: discountController.createDiscount
+                    },
+                    {
+                        path: "/update/:id",
+                        method: "PUT",
+                        function: discountController.updateDiscount
+                    },
+                    {
+                        path: "/delete/:id",
+                        method: "DELETE",
+                        function: discountController.deleteDiscount
                     }
                 ]
             }
