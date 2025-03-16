@@ -12,7 +12,7 @@ function sendError(res, error, message) {
             message: error.message
         });
     } else {
-        console.log(`${message} --ERROR-- ${error}`);
+        console.log(`${message} --ERROR-- ${error} -- STACK -- ${error.stack}`);
         return res.status(500).json({
             status: "failure",
             message: message
