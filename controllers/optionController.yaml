@@ -211,16 +211,37 @@
                   description: The status of the response
                   type: string
                 data:
-                  description: The response of the request
+                  description: The object created
                   type: object
                   properties:
-                    message: 
-                      description: The message of the response
-                      type: string
+                    id:
+                      description: The ID of the option
+                      type: integer
+                    priceAdjustment:
+                      description: The price adjustment for the option
+                      type: number
+                      format: float
+                    defaultQuantity:
+                      description: The default quantity for the option
+                      type: integer
+                    minQuantity:
+                      description: The minimum quantity for the option
+                      type: integer
+                    maxQuantity:
+                      description: The maximum quantity for the option
+                      type: integer
+                    ingredientId:
+                      description: The ID of the ingredient
+                      type: integer
             example:
               status: success
               data:
-                message: Option created successfully
+                id: 1
+                priceAdjustment: 0.5
+                defaultQuantity: 1
+                minQuantity: 1
+                maxQuantity: 10
+                ingredientId: 10
       400:
         description: Bad Request
         content:
