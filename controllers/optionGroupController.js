@@ -89,6 +89,8 @@ async function checkProductId(id) {
     return product;
 }
 
+async 
+
 async function checkOptionGroupDetails(details, optional=false) {
     // The details to return
     var optionDetails = {};
