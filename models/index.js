@@ -26,28 +26,40 @@ let sequelize = new Sequelize(
 );
 
 // Get the model files
-const modelFiles = fs
-    .readdirSync(__dirname)
-    .filter(file => {
-        return (
+const getAllFiles = (dirPath, arrayOfFiles = []) => {
+    const files = fs.readdirSync(dirPath);
+
+    files.forEach(file => {
+        const fullPath = path.join(dirPath, file);
+        if (fs.statSync(fullPath).isDirectory()) {
+            getAllFiles(fullPath, arrayOfFiles);
+        } else if (
             file.indexOf('.') !== 0 &&
             file !== basename &&
             file.slice(-3) === '.js' &&
             file.indexOf('.test.js') === -1
-        );
+        ) {
+            arrayOfFiles.push(fullPath);
+        }
     });
+
+    return arrayOfFiles;
+};
+
+const modelFiles = getAllFiles(__dirname);
 
 // Import the models
 let models = [];
-for (const file of modelFiles) {
-    // Convert the file path to a file URL
-    const modelPath = path.join(__dirname, file);
-    const modelUrl = pathToFileURL(modelPath).href;
-    const { default: modelDefiner } = await import(modelUrl);
-    const model = modelDefiner(sequelize, DataTypes);
-    db[model.name] = model;
-	models.push(model.name);
-}
+await (async () => {
+    for (const file of modelFiles) {
+        // Convert the file path to a file URL
+        const modelUrl = pathToFileURL(file).href;
+        const { default: modelDefiner } = await import(modelUrl);
+        const model = modelDefiner(sequelize, DataTypes);
+        db[model.name] = model;
+        models.push(model.name);
+    }
+})();
 
 console.log(`Loaded models: ${models.join(', ')}`);
 
