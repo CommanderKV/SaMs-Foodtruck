@@ -42,7 +42,7 @@ async function checkCartId(id) {
     return cart;
 }
 
-function checkCartDetails(details, optional=false) {
+async function checkCartDetails(details, optional=false) {
     // The details to return
     var cartDetails = {};
 
@@ -137,7 +137,7 @@ async function createCart(req, res) {
         ///////////////////////////
         //  Run checks on input  //
         ///////////////////////////
-        const cartDetails = checkCartDetails(req.body);
+        const cartDetails = await checkCartDetails(req.body);
 
 
         /////////////////////
