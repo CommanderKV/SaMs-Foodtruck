@@ -338,16 +338,16 @@ describe("Discount Controller", () => {
             expect(response.body.message).toBe("Discount ID must be greater than 0");
         });
 
-        it("should return 400 if there are no details to update", async () => {
+        it("should return 200 if there are no details to update", async () => {
             // Send request
             const response = await request(app)
                 .put(`/api/v1/discounts/update/${testingData.discount.id}`)
                 .send();
 
             // Check the response
-            expect(response.status).toBe(400);
-            expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("No details provided");
+            expect(response.status).toBe(200);
+            expect(response.body.status).toBe("success");
+            expect(response.body.message).toBe("No details to update");
         });
 
         it("should return 400 if priceAdjustment is not greater than 0", async () => {

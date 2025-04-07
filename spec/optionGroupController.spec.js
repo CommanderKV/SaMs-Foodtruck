@@ -292,16 +292,16 @@ describe("OptionGroup Controller", () => {
             expect(response.body.message).toBe("OptionGroup ID must be greater than 0");
         });
 
-        it("should return 400 if there are no details to update", async () => {
+        it("should return 200 if there are no details to update", async () => {
             // Send request
             const response = await request(app)
                 .put(`/api/v1/optionGroups/update/${testingData.optionGroup.id}`)
                 .send();
 
             // Check the response
-            expect(response.status).toBe(400);
-            expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("At least one field is required");
+            expect(response.status).toBe(200);
+            expect(response.body.status).toBe("success");
+            expect(response.body.message).toBe("No details to update");
         });
     });
 

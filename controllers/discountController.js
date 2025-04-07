@@ -8,7 +8,7 @@ import db from "../models/index.js";
 function sendError(res, error, message) {
     if (error instanceof Error == false) {
         return res.status(error.code).json({
-            status: "failure",
+            status: error.status ? error.status : "failure",
             message: error.message
         });
     } else {
@@ -92,8 +92,10 @@ function checkDiscountDetails(details, optional=false) {
     }
 
     // Check if its optional if any details are provided
-    if (Object.keys(discountDetails).length === 0 && optional) {
-        throw { code: 400, message: "No details provided" };
+    if (optional) {
+        if (Object.keys(discountDetails).length === 0) {
+            throw { code: 200, status: "success", message: "No details to update" };
+        }
     }
 
     // Return the details

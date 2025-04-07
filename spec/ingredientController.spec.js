@@ -749,15 +749,15 @@ describe("Ingredient Controller", () => {
             expect(response.body.message).toBe("Price cannot be negative");
         });
 
-        it("should return 400 if there are no details to update", async () => {
+        it("should return 200 if there are no details to update", async () => {
             // Send request
             const response = await request(app)
                 .put(`/api/v1/ingredients/update/${testingData.ingredient.id}`)
                 .send({});
 
             // Check the response
-            expect(response.status).toBe(400);
-            expect(response.body.status).toBe("failure");
+            expect(response.status).toBe(200);
+            expect(response.body.status).toBe("success");
             expect(response.body.message).toBe("No details to update");
         });
     });
