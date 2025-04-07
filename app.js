@@ -7,6 +7,11 @@ import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import routes from "./routes.js";
 
+// Import the user stuff
+import passport from "passport";
+import "./strats/googleStrat.js";
+import userController from "./controllers/userController.js";
+
 // Load environment variables
 dotenv.config();
 
@@ -29,6 +34,21 @@ app.use(session({
         maxAge: undefined // Change in prod
     }
 }));
+
+
+// Setup users
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use("/user", userController);
+
+// FOR TESTING ONLY // --------------------------------------------------------
+app.get("/login", (req, res) => {
+    res.send("Login page");
+});
+app.get("/dashboard", (req, res) => {
+    res.send("Dashboard page");
+});
 
 // API routes
 app.use("/api", routes);
