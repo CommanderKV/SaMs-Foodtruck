@@ -45,7 +45,7 @@ app.use("/user", userController);
 // FOR DEV ONLY
 if (process.env.ENV === "dev") {
     app.get("/login", (req, res) => {
-        res.send("Login page");
+        res.send(req.session);
     });
     app.get("/dashboard", (req, res) => {
         res.send(req.session);
