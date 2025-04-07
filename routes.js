@@ -11,7 +11,6 @@ import categoryController from "./controllers/categoryController.js";
 import discountController from "./controllers/discountController.js";
 import optionController from "./controllers/optionController.js";
 import optionGroupController from "./controllers/optionGroupController.js";
-import path from "path";
 
 //////////////////////////////////////////////
 //  Bellow are all the routes for this api  //
