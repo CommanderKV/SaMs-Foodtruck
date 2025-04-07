@@ -10,7 +10,7 @@ export default (sequelize, DataTypes) => {
                 },
             },
             userId: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.UUID,
                 allowNull: false,
             }
 		}
@@ -21,9 +21,7 @@ export default (sequelize, DataTypes) => {
             through: "productOrdersToCarts",
             onDelete: "CASCADE",
         });
-        Cart.belongsTo(models.users, {
-            through: "userCarts"
-        });
+        Cart.belongsTo(models.users);
     };
 
 	return Cart;

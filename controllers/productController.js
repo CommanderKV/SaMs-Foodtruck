@@ -9,7 +9,7 @@ import savePhoto from '../tools/photoSaver.js';
 function sendError(res, error, message) {
     if (error instanceof Error == false) {
         return res.status(error.code).json({
-            status: "failure",
+            status: error.status ? error.status : "failure",
             message: error.message
         });
     } else {

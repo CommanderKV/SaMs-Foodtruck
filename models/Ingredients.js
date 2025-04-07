@@ -53,6 +53,7 @@ export default (sequelize, DataTypes) => {
 		Ingredient.hasMany(models.options, {
 			onDelete: "CASCADE",
 		});
+		Ingredient.hasMany(models.customizations);
 	};
 
 	return Ingredient;

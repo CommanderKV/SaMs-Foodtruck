@@ -31,8 +31,10 @@ export default (sequelize, DataTypes) => {
             through: "productOrdersToCarts",
         });
         ProductOrder.belongsTo(models.products, {
-            through: "productOrdersToProducts",
             allowNull: false,
+        });
+        ProductOrder.hasMany(models.customizations, {
+            onDelete: "CASCADE",
         });
     };
 

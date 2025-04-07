@@ -63,30 +63,32 @@ async function checkCartDetails(details, optional=false) {
         throw { code: 400, message: "Order total required" };
     }
 
-    // Check the customerId
-    if (details.customerId !== undefined) {
-        // Make sure the customerId is a string
-        if (typeof details.customerId !== "string") {
-            throw { code: 400, message: "CustomerId must be a string" };
+    // Check the userId
+    if (details.userId !== undefined) {
+        // Make sure the userId is a string
+        if (typeof details.userId !== "string") {
+            throw { code: 400, message: "UserId must be a string" };
         }
 
-        if (details.customerId === "") {
-            throw { code: 400, message: "CustomerId empty" };
+        if (details.userId === "") {
+            throw { code: 400, message: "UserId empty" };
         }
 
-        // Check to see if its in the customers
-        const customer = await db.users.findByPk(details.customerId);
-        if (customer === null) {
-            throw { code: 404, message: "Customer not found" };
+        // Check to see if its in the users table
+        const user = await db.users.findByPk(details.userId);
+        if (user === null) {
+            throw { code: 404, message: "User not found" };
         }
 
-        cartDetails.customerId = details.customerId;
+        cartDetails.userId = details.userId;
+    } else if (!optional) {
+        throw { code: 400, message: "UserId required" };
     }
 
     // Check if the details are optional
     if (optional) {
         if (Object.keys(cartDetails).length === 0) {
-            throw { code: 400, message: "No details to update" };
+            throw { code: 200, message: "No details to update" };
         }
     }
 
@@ -116,7 +118,7 @@ async function getCartById(req, res) {
         ///////////////////////
         res.status(200).json({
             status: "success",
-            data: category
+            data: cart
         });
 
     // Catch any database errors
@@ -130,7 +132,7 @@ async function createCart(req, res) {
     /**
      * Body: {
      *    orderTotal: float,
-     *    customerId: string
+     *    userId: string
      * }
      */
     try {
@@ -144,7 +146,7 @@ async function createCart(req, res) {
         //  Perform logic  //
         /////////////////////
 
-        // Create the category
+        // Create the cart
         const cart = await db.carts.create(cartDetails);
 
 
@@ -153,7 +155,7 @@ async function createCart(req, res) {
         ///////////////////////
         res.status(201).json({
             status: "success",
-            data: category
+            data: cart
         });
     } catch (error) {
         sendError(res, error, "Failed to create cart");
@@ -165,19 +167,21 @@ async function updateCart(req, res) {
     /**
      * Body: {
      *     orderTotal: string,
-     *     customerId: string
+     *     userId: string
      * }
      */
     try {
         ///////////////////////////
         //  Run checks on input  //
         ///////////////////////////
+        const cart = await checkCartId(req.params.id);
+        const cartDetails = await checkCartDetails(req.body, true);
 
 
         /////////////////////
         //  Perform logic  //
         /////////////////////
-
+        await cart.update(cartDetails);
 
         ///////////////////////
         //  Send a response  //
