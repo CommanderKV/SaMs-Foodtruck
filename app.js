@@ -42,13 +42,15 @@ app.use(passport.session());
 
 app.use("/user", userController);
 
-// FOR TESTING ONLY // --------------------------------------------------------
-app.get("/login", (req, res) => {
-    res.send("Login page");
-});
-app.get("/dashboard", (req, res) => {
-    res.send("Dashboard page");
-});
+// FOR DEV ONLY
+if (process.env.ENV === "dev") {
+    app.get("/login", (req, res) => {
+        res.send("Login page");
+    });
+    app.get("/dashboard", (req, res) => {
+        res.send(req.session);
+    });
+}
 
 // API routes
 app.use("/api", routes);
@@ -72,10 +74,10 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-	if (app.get("env") === "dev") {
-		return res.status(500).send({ error: err.message });
+	if (process.env.ENV === "dev") {
+		return res.status(500).send({ error: err.message, errStack: err.stack });
 	}
-	res.status(500).send({ error: "Internal Server Error" });
+	res.status(500).send({ error: "Internal Server Error"});
 });
 
 // Configurable port
@@ -85,8 +87,13 @@ const PORT = process.env.PORT || 3000;
 // updated before starting the server
 const startServer = async () => {
     try {
-        await db.sequelize.sync({ alter: true });
-        console.log("Database synchronized");
+        if (process.env.ENV === "dev") {
+            await db.sequelize.sync({ force: true });
+            console.log("Database connected successfully");
+        } else {
+            await db.sequelize.sync();
+            console.log("Database connected successfully");
+        }
 
         const server = app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
