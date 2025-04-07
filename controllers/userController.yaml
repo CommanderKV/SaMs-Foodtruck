@@ -1,0 +1,43 @@
+/user/google:
+  get:
+    tags:
+      - User
+    summary: Authenticate user with google
+    description: Redirects user to Google for authentication and retrieves user information.
+    parameters:
+    responses:
+      302:
+        description: Redirect to Google authentication page
+      500:
+        description: Internal server error, something went wrong during authentication.
+
+/user/google/callback:
+  get:
+    tags:
+      - User
+    summary: Callback for Google authentication
+    description: Handles the callback from Google after user authentication.
+    parameters:
+      - name: code
+        in: query
+        required: true
+        description: Authorization code returned by Google.
+        schema:
+          type: string
+    responses:
+      302:
+        description: Redirect to dashboard or login page after authentication
+      500:
+        description: Internal server error, something went wrong during authentication.
+
+/user/google/logout:
+  get:
+    tags:
+      - User
+    summary: Logout user using Google
+    description: Logs out the user from Google and redirects to the home page.
+    responses:
+      302:
+        description: Redirect to home page after logout
+      500:
+        description: Internal server error, something went wrong during logout.
