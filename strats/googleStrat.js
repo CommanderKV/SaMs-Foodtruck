@@ -5,14 +5,18 @@ import db from "../models/index.js";
 // Serialize user information into the session
 passport.serializeUser((user, done) => {
     // Store the user ID in the session
-    done(null, user.id);
+    done(null, {
+        id: user.id, 
+        displayName: user.displayName, 
+        email: user.email
+    });
 });
 
 // Deserialize user information from the session
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (userDetails, done) => {
     try {
         // Retrieve the user from the database using the ID stored in the session
-        const user = await db.users.findByPk(id);
+        const user = await db.users.findByPk(userDetails.id);
         done(null, user);
     } catch (error) {
         // Handle any errors during deserialization
@@ -42,7 +46,8 @@ passport.use(new GoogleStrategy({
                 email: profile.emails[0].value,
                 service: "google",
             },
-        }); 
+        });
+
         // Pass the user object to the next middleware
         done(null, user);
     } catch (error) {
