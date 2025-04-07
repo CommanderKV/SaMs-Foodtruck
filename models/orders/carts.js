@@ -9,12 +9,9 @@ export default (sequelize, DataTypes) => {
                     min: 0,
                 },
             },
-            customerId: {
-                type: DataTypes.STRING,
+            userId: {
+                type: DataTypes.INTEGER,
                 allowNull: false,
-                validate: {
-                    notEmpty: true,
-                },
             }
 		}
 	);
@@ -23,6 +20,9 @@ export default (sequelize, DataTypes) => {
         Cart.belongsToMany(models.productOrders, {
             through: "productOrdersToCarts",
             onDelete: "CASCADE",
+        });
+        Cart.belongsTo(models.users, {
+            through: "userCarts"
         });
     };
 
