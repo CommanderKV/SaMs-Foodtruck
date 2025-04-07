@@ -15,9 +15,7 @@ passport.serializeUser((user, done) => {
 // Deserialize user information from the session
 passport.deserializeUser(async (userDetails, done) => {
     try {
-        // Retrieve the user from the database using the ID stored in the session
-        const user = await db.users.findByPk(userDetails.id);
-        done(null, user);
+        done(null, userDetails);
     } catch (error) {
         // Handle any errors during deserialization
         done(error, null);
