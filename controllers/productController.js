@@ -1,25 +1,10 @@
 import db from '../models/index.js';
 import savePhoto from '../tools/photoSaver.js';
+import sendError from '../tools/errorHandling.js';
 
 /////////////////////////////
 //    Utility functions    //
 /////////////////////////////
-
-// Handle creating errors
-function sendError(res, error, message) {
-    if (error instanceof Error == false) {
-        return res.status(error.code).json({
-            status: error.status ? error.status : "failure",
-            message: error.message
-        });
-    } else {
-        console.log(`${message} --ERROR-- ${error} -- STACK -- ${error.stack}`);
-        return res.status(500).json({
-            status: "failure",
-            message: message
-        });
-    }
-}
 
 function cleanProduct(products) {
     // Make sure products is an array
