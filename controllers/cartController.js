@@ -40,7 +40,7 @@ async function checkProductId(id) {
         throw { code: 400, message: "ProductOrder ID must be greater than 0" };
     }
 
-    // Check to make sure the category exists
+    // Check to make sure the productOrder exists
     const product = await db.productOrders.findByPk(id);
     if (product === null) {
         throw { code: 404, message: "ProductOrder not found" };
