@@ -30,7 +30,6 @@ describe("ProductOrder Controller", () => {
         });
 
         testingData.customization = await db.customizations.create({
-            name: "Extra Cheese",
             price: 2.0,
             quantity: 1,
         });
