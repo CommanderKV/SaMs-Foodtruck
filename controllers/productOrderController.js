@@ -343,8 +343,21 @@ async function removeCustomizationFromProductOrder(req, res) {
         //  Perform logic  //
         /////////////////////
 
+        // Check if the customization is linked to the product order
+        const check = await productOrder.getCustomizations({
+            where: {
+                id: customization.id
+            }
+        });
+
+        // There are no customizations linked to the product order
+        if (check.length === 0) {
+            throw {code: 409, message: "Customization not linked to product order"};
+        
         // Remove the customization from the product order
-        await productOrder.removeCustomization(customization.id);
+        } else {
+            await productOrder.removeCustomization(customization.id);
+        }
 
 
         ///////////////////////

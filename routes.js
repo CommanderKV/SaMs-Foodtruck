@@ -12,7 +12,8 @@ import discountController from "./controllers/discountController.js";
 import optionController from "./controllers/optionController.js";
 import optionGroupController from "./controllers/optionGroupController.js";
 import cartController from "./controllers/cartController.js";
-import path from "path";
+import productOrderController from "./controllers/productOrderController.js";
+
 
 //////////////////////////////////////////////
 //  Bellow are all the routes for this api  //
@@ -287,6 +288,41 @@ const routes = [
                         path: "/:id/products/:productId",
                         method: "DELETE",
                         function: cartController.removeProductFromCart
+                    }
+                ]
+            },
+            {
+                path: "productOrders",
+                routes: [
+                    {
+                        path: "/:id",
+                        method: "GET",
+                        function: productOrderController.getProductOrderById
+                    },
+                    {
+                        path: "/create",
+                        method: "POST",
+                        function: productOrderController.createProductOrder
+                    },
+                    {
+                        path: "/update/:id",
+                        method: "PUT",
+                        function: productOrderController.updateProductOrder
+                    },
+                    {
+                        path: "/delete/:id",
+                        method: "DELETE",
+                        function: productOrderController.deleteProductOrder
+                    },
+                    {
+                        path: "/:id/customizations",
+                        method: "POST",
+                        function: productOrderController.addCustomizationToProductOrder
+                    },
+                    {
+                        path: "/:id/customizations/:customizationId",
+                        method: "DELETE",
+                        function: productOrderController.removeCustomizationFromProductOrder
                     }
                 ]
             }
