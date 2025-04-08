@@ -11,6 +11,8 @@ import categoryController from "./controllers/categoryController.js";
 import discountController from "./controllers/discountController.js";
 import optionController from "./controllers/optionController.js";
 import optionGroupController from "./controllers/optionGroupController.js";
+import cartController from "./controllers/cartController.js";
+import path from "path";
 
 //////////////////////////////////////////////
 //  Bellow are all the routes for this api  //
@@ -249,6 +251,42 @@ const routes = [
                         path: "/:id/options/:optionId",
                         method: "DELETE",
                         function: optionGroupController.removeOptionFromOptionGroup
+                    }
+                ]
+            },
+            {
+                path: "carts",
+                routes: [
+                    {
+                        path: "/:id",
+                        method: "GET",
+                        function: cartController.getCartById
+                    },
+                    {
+                        path: "/create",
+                        method: "POST",
+                        function: cartController.createCart
+                    },
+                    {
+                        path: "/update/:id",
+                        method: "PUT",
+                        function: cartController.updateCart
+                    },
+                    {
+                        path: "/delete/:id",
+                        method: "DELETE",
+                        function: cartController.deleteCart
+                    },
+
+                    {
+                        path: "/:id/products",
+                        method: "POST",
+                        function: cartController.addProductToCart
+                    },
+                    {
+                        path: "/:id/products/:productId",
+                        method: "DELETE",
+                        function: cartController.removeProductFromCart
                     }
                 ]
             }

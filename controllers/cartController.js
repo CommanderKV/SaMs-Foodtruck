@@ -1,24 +1,9 @@
 import db from '../models/index.js';
+import sendError from '../tools/errorHandling.js';
 
 /////////////////////////////
 //    Utility functions    //
 /////////////////////////////
-
-// Handle creating errors
-function sendError(res, error, message) {
-    if (error instanceof Error == false) {
-        return res.status(error.code).json({
-            status: "failure",
-            message: error.message
-        });
-    } else {
-        console.log(`${message} --ERROR-- ${error} -- STACK -- ${error.stack}`);
-        return res.status(500).json({
-            status: "failure",
-            message: message
-        });
-    }
-}
 
 async function checkCartId(id) {
     // Check to make sure the id is not null
@@ -32,14 +17,36 @@ async function checkCartId(id) {
     } else if (id <= 0) {
         throw { code: 400, message: "Cart ID must be greater than 0" };
     }
-
-    // Check to make sure the category exists
-    const cart = await db.cart.findByPk(id);
+    
+    // Check to make sure the cart exists
+    const cart = await db.carts.findByPk(id);
     if (cart === null) {
         throw { code: 404, message: "Cart not found" };
     }
 
     return cart;
+}
+
+async function checkProductId(id) {
+    // Check to make sure the id is not null
+    if (id === undefined) {
+        throw { code: 400, message: "ProductOrder ID required" };
+    }
+
+    // Check to make sure the id is a number
+    if (isNaN(id)) {
+        throw { code: 400, message: "ProductOrder ID must be a number" };
+    } else if (id <= 0) {
+        throw { code: 400, message: "ProductOrder ID must be greater than 0" };
+    }
+
+    // Check to make sure the category exists
+    const product = await db.productOrders.findByPk(id);
+    if (product === null) {
+        throw { code: 404, message: "ProductOrder not found" };
+    }
+
+    return product;
 }
 
 async function checkCartDetails(details, optional=false) {
@@ -88,7 +95,7 @@ async function checkCartDetails(details, optional=false) {
     // Check if the details are optional
     if (optional) {
         if (Object.keys(cartDetails).length === 0) {
-            throw { code: 200, message: "No details to update" };
+            throw { code: 200, status: "success", message: "No details to update" };
         }
     }
 
@@ -109,10 +116,34 @@ async function getCartById(req, res) {
         ///////////////////////////
         //  Run checks on input  //
         ///////////////////////////
-        const cart = await checkCartId(req.params.id);
+        await checkCartId(req.params.id);
 
 
-        // No logic to perform
+        /////////////////////
+        //  Perform logic  //
+        /////////////////////
+
+        // Get the cart with the products
+        const cart = await db.carts.findByPk(req.params.id, {
+            include: [
+                {
+                    model: db.productOrders,
+                    as: "productOrders",
+                    include: [
+                        {
+                            model: db.customizations,
+                            as: "customizations",
+                        }
+                    ]
+                },
+                {
+                    model: db.users,
+                    as: "user",
+                }
+            ]
+        });
+
+
         ///////////////////////
         //  Send a response  //
         ///////////////////////
@@ -166,8 +197,8 @@ async function createCart(req, res) {
 async function updateCart(req, res) {
     /**
      * Body: {
-     *     orderTotal: string,
-     *     userId: string
+     *    orderTotal: float,
+     *    userId: string
      * }
      */
     try {
@@ -181,6 +212,8 @@ async function updateCart(req, res) {
         /////////////////////
         //  Perform logic  //
         /////////////////////
+        
+        // Update the cart
         await cart.update(cartDetails);
 
         ///////////////////////
@@ -231,9 +264,92 @@ async function deleteCart(req, res) {
     }
 }
 
+
+// POST: /:id/products
+async function addProductToCart(req, res) {
+    /**
+     * Body: {
+     *    productOrderId: int,
+     * }
+     */
+    try {
+        ///////////////////////////
+        //  Run checks on input  //
+        ///////////////////////////
+        const cart = await checkCartId(req.params.id);
+        const product = await checkProductId(req.body.productOrderId);
+
+
+        /////////////////////
+        //  Perform logic  //
+        /////////////////////
+
+        // Check if the product is already linked to the cart
+        const check = await cart.getProductOrders({
+            where: {
+                id: product.id
+            }
+        });
+        if (check.length > 0) {
+            throw {code: 409, message: "Product already linked to cart"};
+        }
+
+        // Add the product to the cart
+        await cart.addProductOrder(product.id);
+
+
+        ///////////////////////
+        //  Send a response  //
+        ///////////////////////
+        res.status(201).json({
+            status: "success",
+            data: product
+        });
+    } catch (error) {
+        sendError(res, error, "Failed to add product to cart");
+    }
+}
+
+// DELETE: /:id/products/:productId
+async function removeProductFromCart(req, res) {
+    /**
+     * Body: null
+     */
+    try {
+        ///////////////////////////
+        //  Run checks on input  //
+        ///////////////////////////
+        const cart = await checkCartId(req.params.id);
+        const product = await checkProductId(req.params.productId);
+
+
+        /////////////////////
+        //  Perform logic  //
+        /////////////////////
+
+        // Remove the product from the cart
+        await cart.removeProductOrder(product);
+
+
+        ///////////////////////
+        //  Send a response  //
+        ///////////////////////
+        res.status(200).json({
+            status: "success",
+            data: {
+                message: "Product removed from cart"
+            }
+        });
+    } catch (error) {
+        sendError(res, error, "Failed to remove product from cart");
+    }
+}
+
 export default {
     getCartById,
     createCart,
     updateCart,
-    deleteCart
+    deleteCart,
+    addProductToCart,
+    removeProductFromCart
 };
