@@ -15,7 +15,9 @@ export default (sequelize, DataTypes) => {
 
     Customization.associate = (models) => {
         Customization.belongsTo(models.productOrders);
-		Customization.belongsTo(models.ingredients)
+		Customization.belongsTo(models.ingredients, {
+			allowNull: false,
+		});
     };
 
 	return Customization;
