@@ -1,9 +1,55 @@
 import db from '../models/index.js';
 import sendError from '../tools/errorHandling.js';
+import removeNulls from '../tools/dataCleaning.js';
 
 /////////////////////////////
 //    Utility functions    //
 /////////////////////////////
+
+function cleanCart(cart) {
+    // Make sure the cart is not null
+    if (cart === null) {
+        return cart;
+    }
+
+    // Remove all null values from the cart object
+    cart = removeNulls(cart);
+
+    ////////////////////////////////////
+    //  Make sure the response is in  //
+    //  the correct format for each   //
+    //            element             //
+    ////////////////////////////////////
+    // Make sure the productOrders are an array
+    if (cart.productOrders && !Array.isArray(cart.productOrders)) {
+        cart.productOrders = [cart.productOrders];
+    }
+
+    // Make sure the customizations are an array
+    if (cart.productOrders && Array.isArray(cart.productOrders)) {
+        cart.productOrders.forEach(product => {
+            if (product.customizations && !Array.isArray(product.customizations)) {
+                product.customizations = [product.customizations];
+            }
+        });
+    }
+
+    //////////////////////////////////////
+    //  Remove unnecessary fields from  //
+    //         the cart object          //
+    //////////////////////////////////////
+    // Remove the productOrdersToCarts field from each productOrder
+    if (cart.productOrders) {
+        cart.productOrders.forEach(product => {
+            if (product.productOrdersToCarts) {
+                delete product.productOrdersToCarts;
+            }
+        });
+    }
+
+    // Return the cleaned cart object
+    return cart;
+}
 
 async function checkCartId(id) {
     // Check to make sure the id is not null
@@ -124,24 +170,45 @@ async function getCartById(req, res) {
         /////////////////////
 
         // Get the cart with the products
-        const cart = await db.carts.findByPk(req.params.id, {
+        let cart = await db.carts.findByPk(req.params.id, {
+            attributes: ["id", "orderTotal"],
             include: [
                 {
                     model: db.productOrders,
                     as: "productOrders",
+                    attributes: ["id", "price", "quantity"],
                     include: [
                         {
                             model: db.customizations,
                             as: "customizations",
+                            attributes: ["id", "quantity", "price"],
+                            include: [
+                                {
+                                    model: db.ingredients,
+                                    as: "ingredient",
+                                    attributes: ["id", "name"]
+                                }
+                            ]
+                        },
+                        {
+                            model: db.products,
+                            as: "product",
+                            attributes: ["id", "name"],
                         }
                     ]
                 },
                 {
                     model: db.users,
                     as: "user",
+                    attributes: ["id", "displayName"]
                 }
-            ]
+            ],
+            raw: true,
+            nest: true
         });
+
+        // Clean the cart object
+        cart = cleanCart(cart);
 
 
         ///////////////////////
@@ -303,7 +370,12 @@ async function addProductToCart(req, res) {
         ///////////////////////
         res.status(201).json({
             status: "success",
-            data: product
+            data: {
+                id: product.id,
+                quantity: product.quantity,
+                price: product.price,
+                productId: product.productId,
+            }
         });
     } catch (error) {
         sendError(res, error, "Failed to add product to cart");

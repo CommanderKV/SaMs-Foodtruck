@@ -1,6 +1,7 @@
 import db from '../models/index.js';
 import savePhoto from '../tools/photoSaver.js';
 import sendError from '../tools/errorHandling.js';
+import removeNulls from '../tools/dataCleaning.js';
 
 /////////////////////////////
 //    Utility functions    //
@@ -11,6 +12,9 @@ function cleanProduct(products) {
     if (!Array.isArray(products)) {
         products = [products];
     }
+
+    // Remove any null values from the products
+    products = removeNulls(products);
 
     //////////////////////////////////
     // Make sure the response is in //
@@ -72,6 +76,7 @@ function cleanProduct(products) {
         }
     });
 
+    // Return the cleaned products
     return products;
 }
 
