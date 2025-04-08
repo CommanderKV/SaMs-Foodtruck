@@ -1,0 +1,514 @@
+/api/v1/productOrders/{id}:
+  get:
+    summary: Get a product order by ID
+    tags: [ProductOrders]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: ID of the product order
+    responses:
+      200:
+        description: Product order retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                data:
+                  description: Product order details
+                  type: object
+                  properties:
+                    id:
+                      description: ID of the product order
+                      type: integer
+                    quantity:
+                      description: Quantity of the product order
+                      type: integer
+                    price:
+                      description: Price of the product order
+                      type: number
+                      format: float
+                    customizations:
+                      description: List of customizations for the product order
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            description: ID of the customization
+                            type: integer
+                          quantity:
+                            description: Quantity of the customization
+                            type: integer
+                          price:
+                            description: Price of the customization
+                            type: number
+                            format: float
+                          ingredient:
+                            description: Ingredient details for the customization
+                            type: object
+                            properties:
+                              id:
+                                description: ID of the ingredient
+                                type: integer
+                              name:
+                                description: Name of the ingredient
+                                type: string
+                              description:
+                                description: Description of the ingredient
+                                type: string
+                              price:
+                                description: Price of the ingredient
+                                type: number
+                                format: float
+                    product:
+                      description: Product details for the order
+                      type: object
+                      properties:
+                        id:
+                          description: ID of the product
+                          type: integer
+                        name:
+                          description: Name of the product
+                          type: string
+                        description:
+                          description: Description of the product
+                          type: string
+                        price:
+                          description: Price of the product
+                          type: number
+                          format: float
+            example:
+              status: success
+              data:
+                id: 1
+                quantity: 3
+                price: 15.99
+                customizations:
+                  - id: 5
+                    quantity: 2
+                    price: 2.5
+                    ingredient:
+                      id: 20
+                      name: "Extra Cheese"
+                      description: "Mozzarella cheese"
+                      price: 1.5
+                product:
+                  id: 101
+                  name: "Pizza"
+                  description: "Delicious cheese pizza"
+                  price: 15.99
+      404:
+        description: Product order not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+            example:
+                status: failure
+                message: Product order not found
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+            example:
+              status: failure
+              message: Internal server error
+
+/api/v1/productOrders/create:
+  post:
+    summary: Create a new product order
+    tags: [ProductOrders]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              quantity:
+                type: integer
+                description: Quantity of the product
+              price:
+                type: number
+                format: float
+                description: Price of the product
+              productId:
+                type: integer
+                description: ID of the product
+            required:
+              - quantity
+              - price
+              - productId
+    responses:
+      201:
+        description: Product order created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                data:
+                  description: Product order details
+                  type: object
+                  properties:
+                    id:
+                      description: ID of the product order
+                      type: integer
+                    quantity:
+                      description: Quantity of the product order
+                      type: integer
+                    price:
+                      description: Price of the product order
+                      type: number
+                      format: float
+                    productId:
+                      description: ID of the product
+                      type: integer
+            example:
+              status: success
+              data:
+                id: 1
+                quantity: 3
+                price: 15.99
+                productId: 101
+      400:
+        description: Invalid input
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+            example:
+              status: failure
+              message: Invalid input
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+            example:
+              status: failure
+              message: Internal server error
+
+/api/v1/productOrders/update/{id}:
+  put:
+    summary: Update a product order by ID
+    tags: [ProductOrders]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: ID of the product order
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              quantity:
+                type: integer
+              price:
+                type: number
+                format: float
+              productId:
+                type: integer
+    responses:
+      200:
+        description: Product order updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                data:
+                  description: Product order details
+                  type: object
+                  properties:
+                    message:
+                      description: Success message
+                      type: string
+            example:
+              status: success
+              data:
+                message: Product order updated
+      404:
+        description: Product order not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+            example:
+              status: failure
+              message: Product order not found
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+            example:
+              status: failure
+              message: Internal server error
+
+/api/v1/productOrders/delete/{id}:
+  delete:
+    summary: Delete a product order by ID
+    tags: [ProductOrders]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: ID of the product order
+    responses:
+      200:
+        description: Product order deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                data:
+                  description: Success message
+                  type: object
+                  properties:
+                    message:
+                      description: Success message
+                      type: string
+            example:
+              status: success
+              data:
+                message: Product order deleted
+      404:
+        description: Product order not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+            example:
+              status: failure
+              message: Product order not found
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+            example:
+              status: failure
+              message: Internal server error
+
+/api/v1/productOrders/{id}/customizations:
+  post:
+    summary: Add a customization to a product order
+    tags: [ProductOrders]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: ID of the product order
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              customizationId:
+                type: integer
+                description: ID of the customization
+    responses:
+      201:
+        description: Customization added successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                data:
+                  description: Customization details
+                  type: object
+                  properties:
+                    id:
+                      description: ID of the customization
+                      type: integer
+                    quantity:
+                      description: Quantity of the customization
+                      type: integer
+                    price:
+                      description: Price of the customization
+                      type: number
+                      format: float
+                    ingredientId:
+                      description: ID of the ingredient for the customization
+                      type: integer
+            example:
+              status: success
+              data:
+                id: 5
+                quantity: 2
+                price: 2.5
+                ingredientId: 20
+      404:
+        description: Product order or customization not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+            example:
+              status: failure
+              message: Product order or customization not found
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+            example:
+              status: failure
+              message: Internal server error
+
+/api/v1/productOrders/{id}/customizations/{customizationId}:
+  delete:
+    summary: Remove a customization from a product order
+    tags: [ProductOrders]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: ID of the product order
+      - in: path
+        name: customizationId
+        required: true
+        schema:
+          type: integer
+        description: ID of the customization
+    responses:
+      200:
+        description: Customization removed successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                data:
+                  description: Success message
+                  type: object
+                  properties:
+                    message:
+                      description: Success message
+                      type: string
+            example:
+              status: success
+              data:
+                message: Customization removed from product order
+      404:
+        description: Product order or customization not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+            example:
+              status: failure
+              message: Product order or customization not found
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                message:
+                  type: string
+            example:
+              status: failure
+              message: Internal server error
