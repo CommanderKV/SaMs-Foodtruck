@@ -13,7 +13,7 @@ import optionController from "./controllers/optionController.js";
 import optionGroupController from "./controllers/optionGroupController.js";
 import cartController from "./controllers/cartController.js";
 import productOrderController from "./controllers/productOrderController.js";
-
+import customizationController from "./controllers/customizationController.js";
 
 //////////////////////////////////////////////
 //  Bellow are all the routes for this api  //
@@ -323,6 +323,31 @@ const routes = [
                         path: "/:id/customizations/:customizationId",
                         method: "DELETE",
                         function: productOrderController.removeCustomizationFromProductOrder
+                    }
+                ]
+            },
+            {
+                path: "customizations",
+                routes: [
+                    {
+                        path: "/:id",
+                        method: "GET",
+                        function: customizationController.getCustomizationById
+                    },
+                    {
+                        path: "/create",
+                        method: "POST",
+                        function: customizationController.createCustomization
+                    },
+                    {
+                        path: "/update/:id",
+                        method: "PUT",
+                        function: customizationController.updateCustomization
+                    },
+                    {
+                        path: "/delete/:id",
+                        method: "DELETE",
+                        function: customizationController.deleteCustomization
                     }
                 ]
             }
