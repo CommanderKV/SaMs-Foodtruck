@@ -347,7 +347,7 @@ describe("Discount Controller", () => {
             // Check the response
             expect(response.status).toBe(200);
             expect(response.body.status).toBe("success");
-            expect(response.body.message).toBe("No details to update");
+            expect(response.body.data.message).toBe("No details to update");
         });
 
         it("should return 400 if priceAdjustment is not greater than 0", async () => {
