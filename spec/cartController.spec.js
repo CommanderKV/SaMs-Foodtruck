@@ -356,6 +356,13 @@ describe("Cart Controller", () => {
 
     describe("DELETE /:id/products/:productId", () => {
         it("should remove a product from the cart", async () => {
+            // First, add the product to the cart
+            await request(app)
+                .post(`/api/v1/carts/${testingData.cart.id}/products`)
+                .send({
+                    productOrderId: testingData.productOrder.id
+                });
+
             // send a request
             const response = await request(app)
                 .delete(`/api/v1/carts/${testingData.cart.id}/products/${testingData.productOrder.id}`);
@@ -377,15 +384,15 @@ describe("Cart Controller", () => {
             expect(response.body.message).toBe("Cart not found");
         });
 
-        it("should return 404 if product is not in the cart", async () => {
+        it("should return 409 if product is not linked to cart", async () => {
             // send a request
             const response = await request(app)
-                .delete(`/api/v1/carts/${testingData.cart.id}/products/${testingData.productOrder.id + 10}`);
+                .delete(`/api/v1/carts/${testingData.cart.id}/products/${testingData.productOrder.id}`);
 
             // check the response
-            expect(response.status).toBe(404);
+            expect(response.status).toBe(409);
             expect(response.body.status).toBe("failure");
-            expect(response.body.message).toBe("ProductOrder not found");
+            expect(response.body.message).toBe("Product not linked to cart");
         });
     });
 });
