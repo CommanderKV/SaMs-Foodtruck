@@ -141,10 +141,12 @@ async function getProductOrderById(req, res) {
 
         // Get the product order with the products
         const productOrder = await db.productOrders.findByPk(req.params.id, {
+            attributes: ["id", "quantity", "price"],
             include: [
                 {
                     model: db.customizations,
                     as: "customizations",
+                    attributes: ["id", "quantity", "price"],
                     include: [
                         {
                             model: db.ingredients,
@@ -152,9 +154,15 @@ async function getProductOrderById(req, res) {
                             attributes: ["id", "name"]
                         }
                     ]
-
+                },
+                {
+                    model: db.products,
+                    as: "product",
+                    attributes: ["id", "name", "description", "price"],
                 }
-            ]
+            ],
+            raw: true,
+            nest: true,
         });
 
 
