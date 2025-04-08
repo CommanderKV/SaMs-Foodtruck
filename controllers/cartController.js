@@ -327,9 +327,21 @@ async function removeProductFromCart(req, res) {
         //  Perform logic  //
         /////////////////////
 
-        // Remove the product from the cart
-        await cart.removeProductOrder(product);
-
+        // Check if the product is linked to the cart
+        const check = await cart.getProductOrders({
+            where: {
+                id: product.id
+            }
+        });
+        
+        // There are no products linked to the cart
+        if (check.length === 0) {
+            throw {code: 409, message: "Product not linked to cart"};
+        
+            // Remove the product from the cart
+        } else {
+            await cart.removeProductOrder(product);
+        }
 
         ///////////////////////
         //  Send a response  //
