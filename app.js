@@ -88,10 +88,17 @@ const PORT = process.env.PORT || 3000;
 const startServer = async () => {
     try {
         if (process.env.ENV === "dev") {
-            await db.sequelize.sync({ force: true });
-            console.log("Database connected successfully");
+            // Used because it will try to update
+            // a table with a column that has a 
+            // unique tag
+            try {
+                await db.sequelize.sync({ alter: true });
+                console.log("Database connected successfully");
+            } catch (err) {
+                console.error("Error synchronizing the database:", err.message);
+            }
         } else {
-            await db.sequelize.sync();
+            await db.sequelize.authenticate();
             console.log("Database connected successfully");
         }
 
