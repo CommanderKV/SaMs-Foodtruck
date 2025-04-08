@@ -98,10 +98,27 @@ async function getCustomizationById(req, res) {
         ///////////////////////////
         //  Run checks on input  //
         ///////////////////////////
-        const customization = await checkCustomizationId(req.params.id);
+        await checkCustomizationId(req.params.id);
 
 
-        // No logic to perform
+        ////////////////////
+        // Perform logic  //
+        ////////////////////
+        const customization = await db.customizations.findByPk(req.params.id, {
+            attributes: ["id", "quantity", "price"],
+            include: [
+                {
+                    model: db.ingredients,
+                    as: "ingredient",
+                    attributes: ["id", "name", "description", "price"],
+                }
+            ],
+            raw: true,
+            nest: true,
+        });
+        
+
+
         ///////////////////////
         //  Send a response  //
         ///////////////////////
@@ -141,7 +158,12 @@ async function createCustomization(req, res) {
         ///////////////////////
         res.status(201).json({
             status: "success", 
-            data: customization
+            data: {
+                id: customization.id,
+                quantity: customization.quantity,
+                price: customization.price,
+                ingredientId: customization.ingredientId,
+            }
         });
     } catch (error) {
         sendError(res, error, "Failed to create customization");
