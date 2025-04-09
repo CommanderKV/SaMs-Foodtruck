@@ -63,6 +63,20 @@ async function checkOrderDetails(details, optional=false) {
 
     // Check cartId
     if (!optional) {
+        if (details.cartId === undefined) {
+            throw { code: 400, message: "Cart ID required" };
+        } else if (isNaN(details.cartId)) {
+            throw { code: 400, message: "Cart ID must be a number" };
+        } else if (details.cartId <= 0) {
+            throw { code: 400, message: "Cart ID must be greater than 0" };
+        }
+
+        // Check if the cart exists
+        const cart = await db.carts.findByPk(details.cartId);
+        if (cart === null) {
+            throw { code: 404, message: "Cart not found" };
+        }
+
         orderDetails.cart = await checkCartId(details.cartId);
     }
 
@@ -241,7 +255,7 @@ async function createOrder(req, res) {
         ///////////////////////////////
         //  Preform checks on input  //
         ///////////////////////////////
-        const orderDetails = checkOrderDetails(req.body);
+        const orderDetails = await checkOrderDetails(req.body);
 
 
         /////////////////////
@@ -313,7 +327,7 @@ async function updateOrder(req, res) {
         //  Preform checks on input  //
         ///////////////////////////////
         const order = await checkOrderId(req.params.id);
-        const orderDetails = checkOrderDetails(req.body, true);
+        const orderDetails = await checkOrderDetails(req.body, true);
 
 
         /////////////////////
