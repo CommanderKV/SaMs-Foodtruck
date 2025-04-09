@@ -24,12 +24,8 @@ export default (sequelize, DataTypes) => {
     );
 
     ProductOrder.associate = (models) => {
-        ProductOrder.belongsTo(models.orders, {
-            through: "productOrdersToOrders",
-        });
-        ProductOrder.belongsTo(models.carts, {
-            through: "productOrdersToCarts",
-        });
+        ProductOrder.belongsTo(models.orders);
+        ProductOrder.belongsTo(models.carts);
         ProductOrder.belongsTo(models.products, {
             allowNull: false,
         });
