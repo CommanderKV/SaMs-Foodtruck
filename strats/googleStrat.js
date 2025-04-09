@@ -8,7 +8,8 @@ passport.serializeUser((user, done) => {
     done(null, {
         id: user.id, 
         displayName: user.displayName, 
-        email: user.email
+        email: user.email,
+        role: user.role,
     });
 });
 
