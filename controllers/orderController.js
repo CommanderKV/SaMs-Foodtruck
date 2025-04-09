@@ -13,11 +13,11 @@ async function checkOrderId(id) {
         throw { code: 400, message: "Order ID required" };
     }
 
-    // Check if the id is a valid number
-    if (isNaN(id)) {
-        throw { code: 400, message: "Order ID must be a number" };
-    } else if (id <= 0) {
-        throw { code: 400, message: "Order ID must be greater than 0" };
+    // Check if the id is a valid UUID
+    if (typeof id !== "string") {
+        throw { code: 400, message: "Order ID must be a string" };
+    } else if (!validate(id)) {
+        throw { code: 400, message: "Order ID must be a valid UUID" };
     }
 
     // Check if the order exists in the database
