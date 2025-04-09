@@ -17,8 +17,7 @@ export default (sequelize, DataTypes) => {
 	);
 
     Cart.associate = (models) => {
-        Cart.belongsToMany(models.productOrders, {
-            through: "productOrdersToCarts",
+        Cart.hasMany(models.productOrders, {
             onDelete: "CASCADE",
         });
         Cart.belongsTo(models.users);

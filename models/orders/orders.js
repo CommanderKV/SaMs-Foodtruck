@@ -2,6 +2,11 @@ export default (sequelize, DataTypes) => {
 	const Order = sequelize.define(
 		'orders', 
 		{
+            id: {
+                type: DataTypes.UUID,
+                allowNull: false,
+                primaryKey: true,
+            },
 			firstName: {
 				type: DataTypes.STRING,
 				allowNull: false,
@@ -18,7 +23,7 @@ export default (sequelize, DataTypes) => {
             },
             email: {
                 type: DataTypes.STRING,
-                allowNull: false,
+                allowNull: true,
                 validate: {
                     notEmpty: true,
                     isEmail: true,
@@ -26,23 +31,16 @@ export default (sequelize, DataTypes) => {
             },
             phoneNumber: {
                 type: DataTypes.STRING,
-                allowNull: false,
-                validate: {
-                    notEmpty: true,
-                },
-            },
-            orderDate: {
-                type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: true,
                 validate: {
                     notEmpty: true,
                 },
             },
             orderTotal: {
-                type: DataTypes.DECIMAL(10, 2),
+                type: DataTypes.FLOAT,
                 allowNull: false,
                 validate: {
-                    min: 0,
+                    notEmpty: true,
                 },
             },
             orderStatus: {
@@ -52,21 +50,18 @@ export default (sequelize, DataTypes) => {
                     notEmpty: true,
                 },
             },
-            customerId: {
-                type: DataTypes.STRING,
+            userId: {
+                type: DataTypes.UUID,
                 allowNull: false,
-                validate: {
-                    notEmpty: true,
-                },
             }
 		}
 	);
 
     Order.associate = (models) => {
-        Order.belongsToMany(models.productOrders, {
-            through: "productOrdersToOrders",
+        Order.hasMany(models.productOrders, {
             onDelete: "CASCADE",
         });
+        Order.belongsTo(models.users);
     };
 
 	return Order;

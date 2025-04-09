@@ -46,8 +46,10 @@ export default (sequelize, DataTypes) => {
 	);
 
     User.associate = (models) => {
-        User.belongsToMany(models.carts, {
-            through: "userCarts",
+        User.hasMany(models.carts, {
+            onDelete: "CASCADE",
+        });
+        User.hasMany(models.orders, {
             onDelete: "CASCADE",
         });
     }
