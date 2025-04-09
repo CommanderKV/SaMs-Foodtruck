@@ -34,6 +34,14 @@ export default (sequelize, DataTypes) => {
                     notEmpty: true,
                 },
             },
+            role: {
+                type: DataTypes.ENUM("admin", "user"),
+                defaultValue: "user",
+                allowNull: false,
+                validate: {
+                    notEmpty: true,
+                },
+            }
 		}
 	);
 
