@@ -1,0 +1,474 @@
+/api/v1/orders/{id}:
+  get:
+    summary: Get an order by ID
+    tags: [Orders]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the order
+        example: "123e4567-e89b-12d3-a456-426614174000"
+    responses:
+      200:
+        description: Order retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                data:
+                  description: Order details
+                  type: object
+                  properties:
+                    id:
+                      description: Unique identifier of the order
+                      type: string
+                      format: uuid
+                    firstName:
+                      description: First name of the customer
+                      type: string
+                    lastName:
+                      description: Last name of the customer
+                      type: string
+                    email:
+                      description: Email address of the customer
+                      type: string
+                    phoneNumber:
+                      description: Phone number of the customer
+                      type: string
+                    orderTotal:
+                      description: Total amount of the order
+                      type: number
+                      format: float
+                    orderStatus:
+                      description: Current status of the order
+                      type: string
+                    productOrders:
+                      description: List of product orders associated with the order
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            description: Unique identifier of the product order
+                            type: integer
+                          price:
+                            description: Price of the product order
+                            type: number
+                            format: float
+                          quantity:
+                            description: Quantity of the product in the order
+                            type: integer
+                          product:
+                            description: Details of the product
+                            type: object
+                            properties:
+                              id:
+                                description: Unique identifier of the product
+                                type: integer
+                              name:
+                                description: Name of the product
+                                type: string
+            example:
+              status: success
+              data:
+                id: "123e4567-e89b-12d3-a456-426614174000"
+                firstName: "John"
+                lastName: "Doe"
+                email: "john.doe@example.com"
+                phoneNumber: "+1234567890"
+                orderTotal: 150.0
+                orderStatus: "Paid"
+                productOrders:
+                  - id: 1
+                    price: 50.0
+                    quantity: 2
+                    product:
+                      id: 101
+                      name: "Burger"
+      404:
+        description: Order not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                message:
+                  description: Error message
+                  type: string
+            example:
+              status: failure
+              message: "Order not found"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                message:
+                  description: Error message
+                  type: string
+            example:
+              status: failure
+              message: "Internal server error"
+
+/api/v1/orders/create:
+  post:
+    summary: Create a new order
+    tags: [Orders]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              cartId:
+                description: ID of the cart associated with the order
+                type: integer
+              firstName:
+                description: First name of the customer
+                type: string
+              lastName:
+                description: Last name of the customer
+                type: string
+              email:
+                description: Email address of the customer
+                type: string
+              phoneNumber:
+                description: Phone number of the customer
+                type: string
+            required:
+              - cartId
+              - firstName
+              - lastName
+          example:
+            cartId: 1
+            firstName: "John"
+            lastName: "Doe"
+            email: "john.doe@example.com"
+            phoneNumber: "+1234567890"
+    responses:
+      303:
+        description: Redirect to Stripe checkout session
+        headers:
+          Location:
+            description: URL of the Stripe checkout session
+            schema:
+              type: string
+            example: "https://checkout.stripe.com/pay/session_id"
+      400:
+        description: Invalid input
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                message:
+                  description: Error message
+                  type: string
+            example:
+              status: failure
+              message: "Invalid input"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                message:
+                  description: Error message
+                  type: string
+            example:
+              status: failure
+              message: "Internal server error"
+
+/api/v1/orders/update/{id}:
+  put:
+    summary: Update an order by ID
+    tags: [Orders]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the order
+        example: "123e4567-e89b-12d3-a456-426614174000"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              firstName:
+                description: Updated first name of the customer
+                type: string
+              lastName:
+                description: Updated last name of the customer
+                type: string
+              email:
+                description: Updated email address of the customer
+                type: string
+              phoneNumber:
+                description: Updated phone number of the customer
+                type: string
+          example:
+            firstName: "Jane"
+            lastName: "Smith"
+            email: "jane.smith@example.com"
+            phoneNumber: "+9876543210"
+    responses:
+      201:
+        description: Order updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                data:
+                  description: Response data
+                  type: object
+                  properties:
+                    message:
+                      description: Success message
+                      type: string
+            example:
+              status: success
+              data:
+                message: "Order updated successfully"
+      404:
+        description: Order not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                message:
+                  description: Error message
+                  type: string
+            example:
+              status: failure
+              message: "Order not found"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                message:
+                  description: Error message
+                  type: string
+            example:
+              status: failure
+              message: "Internal server error"
+
+/api/v1/orders/delete/{id}:
+  delete:
+    summary: Delete an order by ID
+    tags: [Orders]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the order
+        example: "123e4567-e89b-12d3-a456-426614174000"
+    responses:
+      200:
+        description: Order deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                data:
+                  description: Response data
+                  type: object
+                  properties:
+                    message:
+                      description: Success message
+                      type: string
+            example:
+              status: success
+              data:
+                message: "Order deleted successfully"
+      404:
+        description: Order not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                message:
+                  description: Error message
+                  type: string
+            example:
+              status: failure
+              message: "Order not found"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                message:
+                  description: Error message
+                  type: string
+            example:
+              status: failure
+              message: "Internal server error"
+
+/api/v1/orders/orderSuccess/{id}:
+  get:
+    summary: Handle successful order payment
+    tags: [Orders]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the order
+        example: "123e4567-e89b-12d3-a456-426614174000"
+    responses:
+      303:
+        description: Redirect to client success page
+        headers:
+          Location:
+            description: URL of the client success page
+            schema:
+              type: string
+            example: "https://client.example.com/orderSuccess/123e4567-e89b-12d3-a456-426614174000"
+      400:
+        description: Invalid order ID
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                message:
+                  description: Error message
+                  type: string
+            example:
+              status: failure
+              message: "Order ID must be a valid UUID"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                message:
+                  description: Error message
+                  type: string
+            example:
+              status: failure
+              message: "Internal server error"
+
+/api/v1/orders/orderCancel/{id}:
+  get:
+    summary: Handle canceled order payment
+    tags: [Orders]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the order
+        example: "123e4567-e89b-12d3-a456-426614174000"
+    responses:
+      303:
+        description: Redirect to client cancel page
+        headers:
+          Location:
+            description: URL of the client cancel page
+            schema:
+              type: string
+            example: "https://client.example.com/orderCancel"
+      400:
+        description: Invalid order ID
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                message:
+                  description: Error message
+                  type: string
+            example:
+              status: failure
+              message: "Order ID does not match"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Status of the response
+                  type: string
+                message:
+                  description: Error message
+                  type: string
+            example:
+              status: failure
+              message: "Internal server error"
