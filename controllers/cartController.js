@@ -1,6 +1,7 @@
 import db from '../models/index.js';
 import sendError from '../tools/errorHandling.js';
 import removeNulls from '../tools/dataCleaning.js';
+import { validate } from 'uuid';
 
 /////////////////////////////
 //    Utility functions    //
@@ -123,8 +124,9 @@ async function checkCartDetails(details, optional=false) {
             throw { code: 400, message: "UserId must be a string" };
         }
 
-        if (details.userId === "") {
-            throw { code: 400, message: "UserId empty" };
+        // Check if its a valid UUID
+        if (!validate(details.userId)) {
+            throw { code: 400, message: "UserId must be a valid UUID" };
         }
 
         // Check to see if its in the users table
