@@ -6,6 +6,7 @@ import db from "./models/index.js";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import routes from "./routes.js";
+import cors from "cors";
 
 // Import the user stuff
 import passport from "passport";
@@ -22,6 +23,14 @@ app.use(helmet());
 
 // Parse JSON requests
 app.use(express.json());
+
+// Cors: Allow angular client http access
+app.use(cors({
+    origin: process.env.CLIENT_URL,
+    methods: "GET,POST,PUT,DELETE,HEAD,OPTIONS",
+    credentials: true,
+    allowedHeaders: "Content-Type,Authorization",
+}));
 
 // Use express-session middleware
 app.use(session({
