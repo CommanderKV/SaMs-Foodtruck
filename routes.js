@@ -14,6 +14,7 @@ import optionGroupController from "./controllers/optionGroupController.js";
 import cartController from "./controllers/cartController.js";
 import productOrderController from "./controllers/productOrderController.js";
 import customizationController from "./controllers/customizationController.js";
+import orderController from "./controllers/orderController.js";
 
 //////////////////////////////////////////////
 //  Bellow are all the routes for this api  //
@@ -348,6 +349,41 @@ const routes = [
                         path: "/delete/:id",
                         method: "DELETE",
                         function: customizationController.deleteCustomization
+                    }
+                ]
+            },
+            {
+                path: "orders",
+                routes: [
+                    {
+                        path: "/:id",
+                        method: "GET",
+                        function: orderController.getOrderById
+                    },
+                    {
+                        path: "/create",
+                        method: "POST",
+                        function: orderController.createOrder
+                    },
+                    {
+                        path: "/update/:id",
+                        method: "PUT",
+                        function: orderController.updateOrder
+                    },
+                    {
+                        path: "/delete/:id",
+                        method: "DELETE",
+                        function: orderController.deleteOrder
+                    },
+                    {
+                        path: "/orderSuccess/:id",
+                        method: "GET",
+                        function: orderController.orderSuccess
+                    },
+                    {
+                        path: "/orderCancel/:id",
+                        method: "GET",
+                        function: orderController.orderCancel
                     }
                 ]
             }
