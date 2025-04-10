@@ -1,6 +1,7 @@
 // Import necessary modules from express and passport
 import { Router } from "express";
 import passport from "passport";
+import authTools from "../tools/authentication.js";
 
 // Create the router instance to define routes
 const router = Router();
@@ -28,6 +29,9 @@ router.get("/google/callback",
 // Route to log out the user and redirect to the homepage
 // GET: /logout
 router.get("/logout", (req, res) => {
+    // Clear the token cookie
+    authTools.clearTokenCookie(res);
+
     // Log out the user
     req.logout((err) => {
         if (err) {
@@ -35,7 +39,7 @@ router.get("/logout", (req, res) => {
             console.log(err); 
         }
         // Redirect to the homepage
-        res.redirect("/"); 
+        res.redirect(`${process.env.CLIENT_URL}/`); 
     });
 });
 

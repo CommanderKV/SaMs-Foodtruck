@@ -7,11 +7,13 @@ import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import routes from "./routes.js";
 import cors from "cors";
+import {Strategy as jwtStrategy, ExtractJwt } from "passport-jwt";
 
 // Import the user stuff
 import passport from "passport";
 import "./strats/googleStrat.js";
 import userController from "./controllers/userController.js";
+import authTools from "./tools/authentication.js";
 
 // Load environment variables
 dotenv.config();
@@ -53,13 +55,45 @@ app.get("/api/v1/user/fail", (req, res) => {
     res.redirect(`${process.env.CLIENT_URL}/login`);
 });
 app.get("/api/v1/user/success", (req, res) => {
+    // Generate a jwt
+    const token = authTools.generateToken(req.user);
+
+    // Set the token in the cookies
+    authTools.setTokenCookie(res, token);
+
+    // Redirect to the client
     res.redirect(`${process.env.CLIENT_URL}/`);
 });
 
 // Other methods for user login
 app.use("/api/v1/user", userController);
 
+// Setup JWT authentication
+const jwtOptions = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: process.env.JWT_SECRET,
+}
+let strat = new jwtStrategy(jwtOptions, async (jwtPayload, callback) => {
+    try {
+        // Try to find the user
+        const user = await db.users.findByPk(jwtPayload.id);
+        
+        // If the user found
+        if (user) {
+            // Send no error and the user object
+            return callback()
 
+        // If the user not found
+        } else {
+            // Send error
+            return callback(null, false);
+        }
+    } catch (error) {
+        return callback(null, false);
+    }
+})
+
+passport.use(strat);
 
 
 // API routes
