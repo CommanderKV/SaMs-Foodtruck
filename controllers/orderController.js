@@ -158,7 +158,7 @@ async function checkOrderDetails(details, optional=false) {
     return orderDetails;
 }
 
-function createLineItems(cartProducts) {
+async function createLineItems(cartProducts) {
     // Create the line items for Stripe
     let lineItems = [];
 
@@ -166,10 +166,11 @@ function createLineItems(cartProducts) {
     for (let i = 0; i < cartProducts.length; i++) {
         // Get the productOrder's product
         const productOrder = cartProducts[i];
-        const product = productOrder.getProduct();
+        const product = await productOrder.getProduct();
 
         // Push to line items
         lineItems.push({
+            quantity: productOrder.quantity,
             price_data: {
                 currency: "cad",
                 product_data: {
@@ -179,7 +180,6 @@ function createLineItems(cartProducts) {
                 },
                 unit_amount: productOrder.price * 100, // Price in cents
             },
-            quantity: productOrder.quantity,
             // Tax rates can be applied here
         });
     }
@@ -264,13 +264,15 @@ async function createOrder(req, res) {
         
         // Get the cart from the order details
         const cart = orderDetails.cart;
+        delete orderDetails.cart;
 
         // Update the order details
         orderDetails.orderStatus = "unPaid";
         orderDetails.userId = cart.userId;
+        orderDetails.orderTotal = cart.orderTotal;
 
-        // Move the order to the session
-        req.session.order = orderDetails;
+        // Create a custom uuid for the order
+        orderDetails.id = uuidv4();
 
         // Get the user
         const user = await db.users.findByPk(orderDetails.userId);
@@ -286,27 +288,32 @@ async function createOrder(req, res) {
             throw { code: 400, message: "Cart is empty" };
         }
 
-        // Create a custom uuid for the order
-        orderDetails.id = uuidv4();
-
         // Create the items for stripe
-        const lineItems = createLineItems(cartProducts);
+        const lineItems = await createLineItems(cartProducts);
 
         // Perform the payment using Stripe
         const stripeClient = stripe(process.env.STRIPE_SECRET_KEY);
         const session = await stripeClient.checkout.sessions.create({
+            payment_method_types: ["card"],
             customer_email: orderDetails.email || user.email || null,
             line_items: lineItems,
             mode: "payment",
-            success_url: `${process.env.SERVER_URL}/api/v1/orders/orderSuccess/${orderDetails.id}`,
+            success_url: `${process.env.SERVER_URL}/api/v1/orders/orderSuccess/${orderDetails.id}/${cart.id}`,
             cancel_url: `${process.env.SERVER_URL}/api/v1/orders/orderCancel/${orderDetails.id}`,
         });
+
+
+        // Create the order
+        const order = await db.orders.create(orderDetails);
+
+        // Add the productOrders to the order
+        await order.setProductOrders(cartProducts);
 
 
         //////////////////////
         //  Send a message  //
         //////////////////////
-        res.redirect(303, session.url);
+        res.status(200).send({ url: session.url });
     } catch (error) {
         sendError(res, error, "Failed to create order");
     }
@@ -384,7 +391,7 @@ async function deleteOrder(req, res) {
     }
 }
 
-// GET: /orderSuccess/:id
+// GET: /orderSuccess/:orderId/:cartId
 async function orderSuccess(req, res) {
     /**
      * Body: null
@@ -393,47 +400,28 @@ async function orderSuccess(req, res) {
         //////////////////////////
         //  Run check on input  //
         //////////////////////////
-        // Check if the id is a UUID
-        if (!validate(req.params.id)) {
-            throw { code: 400, message: "Order ID must be a valid UUID" };
-        
-        // Check if the id is correct
-        } else if (req.params.id !== req.session.order.id) {
-            throw { code: 400, message: "Order ID does not match" };
-        }
+        const order = await checkOrderId(req.params.orderId);
+        const cart = await checkCartId(req.params.cartId);
 
-        // Get the order details
-        const orderDetails = req.session.order;
 
         /////////////////////
         //  Perform logic  //
         /////////////////////
 
-        // Get the cart
-        const cart = orderDetails.cart;
-        delete orderDetails.cart;
+        // Set the order status to paid
+        order.status = "paid";
+        await order.save();
 
-        // Get the cart products
-        const cartProducts = await cart.getProductOrders();
-        if (cartProducts.length === 0) {
-            throw { code: 400, message: "Cart is empty" };
-        }
+        // Delete the cart
+        await cart.destroy();
 
-        // Update the order status
-        orderDetails.orderStatus = "Paid";
-
-        // Create the order
-        const order = await db.orders.create(orderDetails);
-
-        // Add the productOrders to the order
-        await order.setProductOrders(cartProducts);
 
         ///////////////////////
         //  Send a response  //
         ///////////////////////
         res.redirect(303, `${process.env.CLIENT_URL}/orderSuccess/${order.id}`);
-    } catch {error} {
-        sendError(res, error, "Failed to update order");
+    } catch (error) {
+        sendError(res, error, "Failed to complete order");
     }
 }
 
@@ -448,19 +436,15 @@ async function orderCancel(req, res) {
         ///////////////////////////
 
         // Check if the id is a UUID
-        if (!validate(req.params.id)) {
-            throw { code: 400, message: "Order ID must be a valid UUID" };
-        
-        // Check if the id is correct
-        } else if (req.params.id !== req.session.order.id) {
-            throw { code: 400, message: "Order ID does not match" };
-        }
+        const order = await checkOrderId(req.params.id);
 
 
         /////////////////////
         //  Perform logic  //
         /////////////////////
-        delete req.session.order;
+        
+        // Destroy the order since it failed
+        await order.destroy();
 
 
         ///////////////////////
