@@ -29,7 +29,7 @@ passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_SIGNIN_KEY,
     clientSecret: process.env.GOOGLE_SIGNIN_SECRET,
     // URL to handle the callback after Google authentication
-    callbackURL: "/user/google/callback",
+    callbackURL: "/api/v1/user/google/callback",
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         // Find or create a user in the database based on the Google profile information

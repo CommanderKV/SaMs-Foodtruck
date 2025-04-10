@@ -376,7 +376,7 @@ const routes = [
                         function: orderController.deleteOrder
                     },
                     {
-                        path: "/orderSuccess/:id",
+                        path: "/orderSuccess/:orderId/:cartId",
                         method: "GET",
                         function: orderController.orderSuccess
                     },

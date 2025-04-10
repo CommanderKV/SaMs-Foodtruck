@@ -36,11 +36,11 @@ app.use(cors({
 app.use(session({
     secret: "sample-secret",
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: {
         httpOnly: false,  // change in prod
         secure: false,    // Change in prod
-        maxAge: undefined // Change in prod
+        maxAge: undefined, // Change in prod
     }
 }));
 
@@ -48,18 +48,19 @@ app.use(session({
 // Setup users
 app.use(passport.initialize());
 app.use(passport.session());
+// Where to redirect on success or failure of login
+app.get("/api/v1/user/fail", (req, res) => {
+    res.redirect(`${process.env.CLIENT_URL}/login`);
+});
+app.get("/api/v1/user/success", (req, res) => {
+    res.redirect(`${process.env.CLIENT_URL}/`);
+});
 
-app.use("/user", userController);
+// Other methods for user login
+app.use("/api/v1/user", userController);
 
-// FOR DEV ONLY
-if (process.env.ENV === "dev") {
-    app.get("/login", (req, res) => {
-        res.send(req.session);
-    });
-    app.get("/dashboard", (req, res) => {
-        res.send(req.session);
-    });
-}
+
+
 
 // API routes
 app.use("/api", routes);
