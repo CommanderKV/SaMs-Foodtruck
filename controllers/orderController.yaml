@@ -162,14 +162,18 @@
             email: "john.doe@example.com"
             phoneNumber: "+1234567890"
     responses:
-      303:
+      200:
         description: Redirect to Stripe checkout session
-        headers:
-          Location:
-            description: URL of the Stripe checkout session
+        content:
+          application/json:
             schema:
-              type: string
-            example: "https://checkout.stripe.com/pay/session_id"
+              type: object
+              properties:
+                url:
+                  description: URL of the Stripe checkout session
+                  type: string
+            example:
+              url: "https://checkout.stripe.com/session/1234567890"
       400:
         description: Invalid input
         content:
@@ -363,19 +367,26 @@
               status: failure
               message: "Internal server error"
 
-/api/v1/orders/orderSuccess/{id}:
+/api/v1/orders/orderSuccess/{orderId}/{cartId}:
   get:
     summary: Handle successful order payment
     tags: [Orders]
     parameters:
       - in: path
-        name: id
+        name: orderId
         required: true
         schema:
           type: string
           format: uuid
         description: UUID of the order
         example: "123e4567-e89b-12d3-a456-426614174000"
+      - in: path
+        name: cartId
+        required: true
+        schema:
+          type: integer
+        description: ID of the cart associated with the order
+        example: 1
     responses:
       303:
         description: Redirect to client success page
@@ -386,7 +397,7 @@
               type: string
             example: "https://client.example.com/orderSuccess/123e4567-e89b-12d3-a456-426614174000"
       400:
-        description: Invalid order ID
+        description: Invalid input
         content:
           application/json:
             schema:
@@ -400,7 +411,7 @@
                   type: string
             example:
               status: failure
-              message: "Order ID must be a valid UUID"
+              message: "Invalid order ID or cart ID"
       500:
         description: Internal server error
         content:
@@ -455,7 +466,7 @@
                   type: string
             example:
               status: failure
-              message: "Order ID does not match"
+              message: "Order ID must be a valid UUID"
       500:
         description: Internal server error
         content:
