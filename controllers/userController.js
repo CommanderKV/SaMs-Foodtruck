@@ -10,6 +10,23 @@ const router = Router();
 //    Requests    //
 ////////////////////
 
+// Route to get the current user information
+// GET: /
+router.get("/", (req, res) => {
+    // Check if user is authenticated
+    if (req.isAuthenticated()) {
+        // Send the user information as a response
+        res.status(200).json({
+            status: "success",
+            data: req.user
+        }); 
+    } else {
+        // Send an empty object if not authenticated
+        res.status(401).json({ status: "fail", message: "Unauthorized" }); 
+    }
+});
+
+
 // Route to initiate Google authentication
 // GET: /google
 router.get("/google", passport.authenticate("google", {
