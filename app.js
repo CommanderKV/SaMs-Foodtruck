@@ -62,7 +62,7 @@ app.get("/api/v1/user/success", (req, res) => {
     authTools.setTokenCookie(res, token);
 
     // Redirect to the client
-    res.redirect(`${process.env.CLIENT_URL}/`);
+    res.redirect(`${process.env.CLIENT_URL}/dashboard`);
 });
 
 // Other methods for user login
