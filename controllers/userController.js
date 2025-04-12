@@ -22,7 +22,7 @@ router.get("/", (req, res) => {
         }); 
     } else {
         // Send an empty object if not authenticated
-        res.status(401).json({ status: "fail", message: "Unauthorized" }); 
+        res.status(401).json({ status: "failure", message: "Unauthorized" }); 
     }
 });
 
