@@ -61,8 +61,12 @@ app.get("/api/v1/user/success", (req, res) => {
     // Set the token in the cookies
     authTools.setTokenCookie(res, token);
 
-    // Redirect to the client
-    res.redirect(`${process.env.CLIENT_URL}/dashboard`);
+    // Redirect to the client dashbaord based off the role
+    if (req.user.role == "user") {
+        res.redirect(`${process.env.CLIENT_URL}/dashboard`);
+    } else if (req.user.role == "admin") {
+        res.redirect(`${process.env.CLIENT_URL}/admin`);
+    }
 });
 
 // Other methods for user login
