@@ -31,7 +31,6 @@ function clearTokenCookie(res) {
     res.clearCookie("authToken", {
         httpOnly: true,
         secure: true,
-        expires: new Date(0)
     });
 }
 
