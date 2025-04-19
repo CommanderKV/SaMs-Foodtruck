@@ -86,8 +86,6 @@ function checkIngredientDetails(details, optional=false) {
             throw { code: 400, message: "Photo required" };
         }
         ingredientDetails.photo = details.photo;
-    } else if (!optional) {
-        throw { code: 400, message: "Photo required" };
     }
 
     // Check the product link
@@ -211,7 +209,9 @@ async function createIngredient(req, res) {
         /////////////////////
 
         // Save the photo
-        ingredientDetails.photo = await savePhoto(ingredientDetails.photo);
+        if (ingredientDetails.photo) {
+            ingredientDetails.photo = await savePhoto(ingredientDetails.photo);
+        }
 
         // Create the ingredient
         const ingredient = await db.ingredients.create(ingredientDetails);

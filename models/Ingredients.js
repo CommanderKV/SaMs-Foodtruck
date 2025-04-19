@@ -22,8 +22,7 @@ export default (sequelize, DataTypes) => {
 			},
 			photo: {
 				type: DataTypes.STRING,
-				allowNull: false,
-				default: "default.jpg",
+				defaultValue: "logo.png",
 				validate: {
 					notEmpty: true,
 				},
