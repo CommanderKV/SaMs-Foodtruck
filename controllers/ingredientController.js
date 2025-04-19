@@ -58,8 +58,6 @@ function checkIngredientDetails(details, optional=false) {
             throw { code: 400, message: "Description required" };
         }
         ingredientDetails.description = details.description;
-    } else if (!optional) {
-        throw { code: 400, message: "Description required" };
     }
 
     // Check the quantity
@@ -103,8 +101,6 @@ function checkIngredientDetails(details, optional=false) {
             throw { code: 400, message: "Product link required" };
         }
         ingredientDetails.productLink = details.productLink
-    } else if (!optional) {
-        throw { code: 400, message: "Product link required" };
     }
 
     // Check the price
