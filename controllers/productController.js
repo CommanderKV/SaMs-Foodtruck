@@ -168,6 +168,9 @@ async function checkOptionGroupId(optionGroupId) {
 }
 
 function checkProductDetails(productDetails) {
+    // The details to return
+    let details = {};
+
     // Check if the name is set
     if (productDetails.name != undefined) {
         if (typeof productDetails.name !== "string") {
@@ -176,6 +179,7 @@ function checkProductDetails(productDetails) {
         if (productDetails.name.trim() === "") {
             throw {code: 400, message: "Name must not be empty"};
         }
+        details.name = productDetails.name;
     } else {throw {code: 400, message: "Name is required"};}
     
     // Check if the description is set
@@ -186,6 +190,7 @@ function checkProductDetails(productDetails) {
         if (productDetails.description.trim() === "") {
             throw {code: 400, message: "Description must not be empty"};
         }
+        details.description = productDetails.description;
     } else {throw {code: 400, message: "Description is required"};}
 
     // Check if the price is set
@@ -196,6 +201,7 @@ function checkProductDetails(productDetails) {
         if (productDetails.price < 0) {
             throw {code: 400, message: "Price cannot be negative"};
         }
+        details.price = productDetails.price;
     } else {
         throw {code: 400, message: "Price is required"};
     }
@@ -208,9 +214,10 @@ function checkProductDetails(productDetails) {
         if (productDetails.photo.trim() === "") {
             throw {code: 400, message: "Photo must not be empty"};
         }
+        details.photo = productDetails.photo;
     }
 
-    return productDetails;
+    return details;
 }
 
 // Check for an id and return updatedProducts
