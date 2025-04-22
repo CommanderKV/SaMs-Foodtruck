@@ -208,8 +208,6 @@ function checkProductDetails(productDetails) {
         if (productDetails.photo.trim() === "") {
             throw {code: 400, message: "Photo must not be empty"};
         }
-    } else {
-        throw {code: 400, message: "Photo is required"};
     }
 
     return productDetails;
@@ -478,7 +476,9 @@ async function createProduct(req, res) {
         /////////////////////
 
         // Convert the photo to a file
-        productDetails.photo = await savePhoto(productDetails.photo);
+        if (productDetails.photo != undefined) {
+            productDetails.photo = await savePhoto(productDetails.photo);
+        }
 
         // Create the product
         const newProduct = await db.products.create(productDetails);
@@ -705,7 +705,7 @@ async function addOptionGroup(req, res) {
             }
         });
         if (check.length > 0) {
-            throw {code: 409, message: "OptionGroup already linked to product"};
+            throw {code: 200, status: "success", message: "OptionGroup already linked to product"};
         }
 
         // Add the optionGroup to the product
