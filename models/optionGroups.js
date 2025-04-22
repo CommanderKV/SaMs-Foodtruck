@@ -14,6 +14,11 @@ export default (sequelize, DataTypes) => {
 				allowNull: false,
                 default: true,
 			},
+            required: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                default: false,
+            }
 		},
 		{
 			timestamps: false,

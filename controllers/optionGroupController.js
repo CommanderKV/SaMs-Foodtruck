@@ -104,6 +104,17 @@ async function checkOptionGroupDetails(details, optional=false) {
         throw { code: 400, message: "Multiple choice flag required" };
     }
 
+    // Check the required flag
+    if (details.required !== undefined) {
+        // Make sure the required flag is a boolean
+        if (typeof details.required !== "boolean") {
+            throw { code: 400, message: "Required flag must be a boolean" };
+        }
+        optionDetails.required = details.required;
+    } else if (!optional) {
+        throw { code: 400, message: "Required flag required" };
+    }
+
     // Check if the product ID is provided
     if (details.productId !== undefined) {
         // Check if the product exists
@@ -185,6 +196,7 @@ async function createOptionGroup(req, res) {
      * Body: {
      *     sectionName: string,
      *     multipleChoice: boolean,
+     *     required: boolean,
      *     productId: number
      * }
      */
@@ -218,7 +230,8 @@ async function updateOptionGroup(req, res) {
     /**
      * Body: {
      *     sectionName: string,
-     *     multipleChoice: boolean
+     *     multipleChoice: boolean,
+     *     required: boolean,
      * }
      */
     try {
