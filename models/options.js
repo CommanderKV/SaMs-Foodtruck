@@ -27,6 +27,11 @@ export default (sequelize, DataTypes) => {
                     min: 1,
                 },
 			},
+			default: {
+				type: DataTypes.BOOLEAN,
+				allowNull: false,
+				defaultValue: false,
+			}
 		},
 		{
 			timestamps: false,

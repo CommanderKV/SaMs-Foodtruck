@@ -112,6 +112,17 @@ async function checkOptionDetails(details, optional=false) {
         throw { code: 400, message: "Ingredient ID required" };
     }
 
+    // Check if the default is set
+    if (details.default !== undefined) {
+        // Make sure the default is a boolean
+        if (typeof details.default !== "boolean") {
+            throw { code: 400, message: "Default must be a boolean" };
+        }
+        optionDetails.default = details.default;
+    } else if (!optional) {
+        throw { code: 400, message: "Default required" };
+    }
+
     // Check if optional is true
     if (optional) {
         // Check if the details is empty
@@ -190,6 +201,7 @@ async function createOption(req, res) {
      *     minQuantity: number,
      *     maxQuantity: number,
      *     ingredientId: number,
+     *     default: boolean,
      * }
      */
     try {
