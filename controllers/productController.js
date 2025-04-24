@@ -637,19 +637,17 @@ async function addCategory(req, res) {
     }
 }
 
-// DELETE: /:id/categories
+// DELETE: /:id/categories/:categoryId
 async function removeCategory(req, res) {
     /**
-     * Body: {
-     *    id: 1
-     * }
+     * Body: null
      */
     try {
         ///////////////////////////
         //  Run checks on input  //
         ///////////////////////////
         const product = await checkProductId(req.params.id);
-        const category = await checkCategoryId(req.body.id);
+        const category = await checkCategoryId(req.params.categoryId);
 
 
         /////////////////////
@@ -899,7 +897,7 @@ async function updateIngredient(req, res) {
             }
         });
         if (ingredients.length === 0) {
-            throw {code: 404, message: "Ingredient is not linked to product"};
+            throw {code: 200, status: "success", message: "Ingredient is not linked to product"};
         }
 
         // Update the ingredient link
@@ -924,19 +922,17 @@ async function updateIngredient(req, res) {
     }
 }
 
-// DELETE: /:id/ingredients
+// DELETE: /:id/ingredients/:ingredientId
 async function removeIngredient(req, res) {
     /**
-     * Body: {
-     *    id: 1
-     * }
+     * Body: null
      */
     try {
         ///////////////////////////
         //  Run checks on input  //
         ///////////////////////////
         const product = await checkProductId(req.params.id);
-        const ingredient = await checkIngredientId(req.body.id);
+        const ingredient = await checkIngredientId(req.params.ingredientId);
 
 
         /////////////////////

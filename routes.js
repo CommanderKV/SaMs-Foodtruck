@@ -58,7 +58,7 @@ const routes = [
                         function: productController.addCategory
                     },
                     {
-                        path: "/:id/categories",
+                        path: "/:id/categories/:categoryId",
                         method: "DELETE",
                         function: productController.removeCategory
                     },
@@ -83,7 +83,7 @@ const routes = [
                         function: productController.updateIngredient
                     },
                     {
-                        path: "/:id/ingredients",
+                        path: "/:id/ingredients/:ingredientId",
                         method: "DELETE",
                         function: productController.removeIngredient
                     }
