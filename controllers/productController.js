@@ -299,6 +299,7 @@ async function getAllProducts(req, res) {
 
         // Get all products
         var menuItems = await db.products.findAll({
+            attributes: ["id", "name", "description", "price", "photo"],
             include: [
                 {
                     model: db.ingredients,
@@ -311,6 +312,10 @@ async function getAllProducts(req, res) {
                 {
                     model: db.categories,
                     as: "categories",
+                    through: {
+                        model: db.categoriesToProducts,
+                        attributes: []
+                    }
                 },
                 {
                     model: db.optionGroups,
@@ -318,7 +323,8 @@ async function getAllProducts(req, res) {
                     attributes: [
                         "id", 
                         "sectionName",
-                        "multipleChoice"
+                        "multipleChoice",
+                        "required"
                     ],
                     include: [
                         {
@@ -343,17 +349,19 @@ async function getAllProducts(req, res) {
                                         "photo"
                                     ]
                                 }
-                            ]
+                            ],
+                            through: {
+                                model: db.optionsToGroups,
+                                attributes: []
+                            }
                         }
-                    ]
+                    ],
                 }
             ],
-            raw: true,
-            nest: true
         });
 
         // Clean the response
-        menuItems = cleanProduct(menuItems);
+        menuItems = cleanProduct(JSON.parse(JSON.stringify(menuItems)));
 
 
         ///////////////////////
@@ -386,6 +394,7 @@ async function getProductById(req, res) {
 
         // Get the product
         const product = await db.products.findByPk(req.params.id, {
+            attributes: ["id", "name", "description", "price", "photo"],
             include: [
                 {
                     model: db.ingredients,
@@ -398,14 +407,19 @@ async function getProductById(req, res) {
                 {
                     model: db.categories,
                     as: "categories",
+                    through: {
+                        model: db.categoriesToProducts,
+                        attributes: []
+                    }
                 },
                 {
                     model: db.optionGroups,
                     as: "optionGroups",
                     attributes: [
                         "id", 
-                        "sectionName", 
-                        "multipleChoice"
+                        "sectionName",
+                        "multipleChoice",
+                        "required"
                     ],
                     include: [
                         {
@@ -413,7 +427,7 @@ async function getProductById(req, res) {
                             as: "options",
                             attributes: [
                                 "id", 
-                                "priceAdjustment",
+                                "priceAdjustment", 
                                 "minQuantity", 
                                 "maxQuantity",
                                 "defaultQuantity"
@@ -430,17 +444,19 @@ async function getProductById(req, res) {
                                         "photo"
                                     ]
                                 }
-                            ]
+                            ],
+                            through: {
+                                model: db.optionsToGroups,
+                                attributes: []
+                            }
                         }
-                    ]
+                    ],
                 }
             ],
-            raw: true,
-            nest: true
         });
 
         // Clean the response
-        var productDetails = cleanProduct(product);
+        var productDetails = cleanProduct(JSON.parse(JSON.stringify(product)));
 
         // Make sure we only have one product
         if (productDetails.length > 1) {
