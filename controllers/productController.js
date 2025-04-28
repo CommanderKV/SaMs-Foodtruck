@@ -430,7 +430,8 @@ async function getProductById(req, res) {
                                 "priceAdjustment", 
                                 "minQuantity", 
                                 "maxQuantity",
-                                "defaultQuantity"
+                                "defaultQuantity",
+                                "default"
                             ],
                             include: [
                                 {
