@@ -391,7 +391,7 @@ const routes = [
     }
 ]
 
-// All routes need to be authenticated TODO: Uncomment in prod
+// All routes need to be authenticated TODO: Uncomment in prod and make authentication work
 // router.use((req, res, next) => {
 //     if (req.session.authenticated) {
 //         next();
